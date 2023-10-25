@@ -87,12 +87,13 @@ export const action = async ({ params, request }) => {
             ...baseCodeDiscount,
             metafields: [
               {
-                namespace: "$app:volume-discount",
+                namespace: "$app:sku-discount",
                 key: "function-configuration",
                 type: "json",
                 value: JSON.stringify({
                   quantity: configuration.quantity,
                   percentage: configuration.percentage,
+                  sku: configuration.sku,
                 }),
               },
             ],
@@ -122,12 +123,13 @@ export const action = async ({ params, request }) => {
             ...baseDiscount,
             metafields: [
               {
-                namespace: "$app:volume-discount",
+                namespace: "$app:sku-discount",
                 key: "function-configuration",
                 type: "json",
                 value: JSON.stringify({
                   quantity: configuration.quantity,
                   percentage: configuration.percentage,
+                  sku: configuration.sku,
                 }),
               },
             ],
@@ -200,6 +202,7 @@ export default function VolumeNew() {
       configuration: {
         quantity: useField("0"),
         percentage: useField("0"),
+        sku: useField("sku01, sku02, sku03...")
       },
     },
     onSubmit: async (form) => {
@@ -215,6 +218,7 @@ export default function VolumeNew() {
         configuration: {
           quantity: parseInt(form.configuration.quantity),
           percentage: parseFloat(form.configuration.percentage),
+          sku: form.configuration.sku,
         },
       };
 
@@ -271,13 +275,16 @@ export default function VolumeNew() {
               <Card>
                 <VerticalStack gap="3">
                   <Text variant="headingMd" as="h2">
-                    Volume
+                    SKU
                   </Text>
                   <TextField
-                    label="Minimum quantity"
-                    autoComplete="on"
-                    {...configuration.quantity}
-                  />
+                    label="Product SKUs (Required)"                                      
+                    maxLength={550}
+                    autoComplete="off"
+                    showCharacterCount
+                    helpText="Enter all skus seperated by comma (e.g. sku001, sku002, sku003)"
+                    {...configuration.sku}
+                  />                                   
                   <TextField
                     label="Discount percentage"
                     autoComplete="on"

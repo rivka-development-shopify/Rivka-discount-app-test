@@ -112,7 +112,7 @@ export default function Index() {
                   <Text as="h2" variant="headingMd">
                     Congrats on creating a new Shopify app 🎉
                   </Text>
-                  <RLink to="/app/volume-discount/:functionId/new">Create Discount</RLink>                  
+                  <RLink to="/app/volume-discount/0dfa920d-29b2-4c70-ab2f-1d2e3768ff52/new">Create Discount</RLink>                  
                   <Text variant="bodyMd" as="p">
                     This embedded app template uses{" "}
                     <Link

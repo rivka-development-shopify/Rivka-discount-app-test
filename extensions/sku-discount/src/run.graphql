@@ -5,14 +5,15 @@ query RunInput {
       merchandise {
         __typename
         ... on ProductVariant {
-          id          
+          id
+          sku
         }
       }
     }
   }
   discountNode {
     metafield(
-      namespace: "$app:volume-discount"
+      namespace: "$app:sku-discount", 
       key: "function-configuration"
     ) {
       value

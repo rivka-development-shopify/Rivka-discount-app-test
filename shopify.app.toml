@@ -2,7 +2,7 @@
 
 name = "discount-app-test-1"
 client_id = "d7cd8aa19194b1aa92ae6fa1fc192921"
-application_url = "https://recently-august-belief-providers.trycloudflare.com"
+application_url = "https://existing-spatial-characteristic-petroleum.trycloudflare.com"
 embedded = true
 
 [access_scopes]
@@ -11,9 +11,9 @@ scopes = "write_products,write_discounts"
 
 [auth]
 redirect_urls = [
-  "https://recently-august-belief-providers.trycloudflare.com/auth/callback",
-  "https://recently-august-belief-providers.trycloudflare.com/auth/shopify/callback",
-  "https://recently-august-belief-providers.trycloudflare.com/api/auth/callback"
+  "https://existing-spatial-characteristic-petroleum.trycloudflare.com/auth/callback",
+  "https://existing-spatial-characteristic-petroleum.trycloudflare.com/auth/shopify/callback",
+  "https://existing-spatial-characteristic-petroleum.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -24,4 +24,4 @@ embedded = false
 
 [build]
 automatically_update_urls_on_dev = true
-dev_store_url = "rivka-testing-store.myshopify.com"
+dev_store_url = "rivka-extensibility-testing.myshopify.com"
