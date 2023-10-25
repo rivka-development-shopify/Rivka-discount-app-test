@@ -1,0 +1,9 @@
+/home/will_devpower/shopify-apps/discount-app-test-1/extensions/product-discount-rust/target/wasm32-wasi/release/deps/shopify_function-12b36823b8fabb79.rmeta: /home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/lib.rs /home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/scalars.rs /home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/scalars/decimal.rs
+
+/home/will_devpower/shopify-apps/discount-app-test-1/extensions/product-discount-rust/target/wasm32-wasi/release/deps/libshopify_function-12b36823b8fabb79.rlib: /home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/lib.rs /home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/scalars.rs /home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/scalars/decimal.rs
+
+/home/will_devpower/shopify-apps/discount-app-test-1/extensions/product-discount-rust/target/wasm32-wasi/release/deps/shopify_function-12b36823b8fabb79.d: /home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/lib.rs /home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/scalars.rs /home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/scalars/decimal.rs
+
+/home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/lib.rs:
+/home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/scalars.rs:
+/home/will_devpower/.cargo/registry/src/index.crates.io-6f17d22bba15001f/shopify_function-0.4.0/src/scalars/decimal.rs:
