@@ -1,19 +1,22 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
+<<<<<<< HEAD
 name = "discount-app-test-1"
 client_id = "d7cd8aa19194b1aa92ae6fa1fc192921"
 application_url = "https://existing-spatial-characteristic-petroleum.trycloudflare.com"
+client_id = "19cd97e323214c32cab0595d3d285679"
+application_url = "https://623d-181-31-154-153.ngrok-free.app"
 embedded = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products,write_discounts"
+scopes = ""
 
 [auth]
 redirect_urls = [
-  "https://existing-spatial-characteristic-petroleum.trycloudflare.com/auth/callback",
-  "https://existing-spatial-characteristic-petroleum.trycloudflare.com/auth/shopify/callback",
-  "https://existing-spatial-characteristic-petroleum.trycloudflare.com/api/auth/callback"
+  "https://623d-181-31-154-153.ngrok-free.app/auth/callback",
+  "https://623d-181-31-154-153.ngrok-free.app/auth/shopify/callback",
+  "https://623d-181-31-154-153.ngrok-free.app/api/auth/callback"
 ]
 
 [webhooks]
