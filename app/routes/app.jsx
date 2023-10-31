@@ -34,8 +34,6 @@ export default function App() {
             <Link to="/app" rel="home">
               Home
             </Link>
-            <Link to="/app/additional">Additional page</Link>
-            <Link to="/app/volume-discount/0dfa920d-29b2-4c70-ab2f-1d2e3768ff52/new">Create discount</Link>
           </ui-nav-menu>
           <Outlet />
         </DiscountProvider>

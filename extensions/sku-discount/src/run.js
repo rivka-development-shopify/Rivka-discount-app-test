@@ -37,11 +37,11 @@ export function run(input) {
 
   const targets = input.cart.lines
     .filter(line => {
-      const variant = /** @type {ProductVariant} */ (line.merchandise);      
-      return variant.sku == configuration.sku && line.merchandise.__typename == "ProductVariant"      
+      const variant = /** @type {ProductVariant} */ (line.merchandise);
+      return variant.sku == configuration.sku && line.merchandise.__typename == "ProductVariant"
     })
     .map(line => {
-      const variant = /** @type {ProductVariant} */ (line.merchandise);      
+      const variant = /** @type {ProductVariant} */ (line.merchandise);
       return /** @type {Target} */ ({
         productVariant: {
           id: variant.id

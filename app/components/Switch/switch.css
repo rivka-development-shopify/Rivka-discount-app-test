@@ -1,0 +1,21 @@
+.hole-width-switch {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.8rem;
+}
+.hole-width-switch .hole-width-input {
+  width: 1.9rem;
+  height: 1.5rem;
+}
+
+.hole-width-switch .hole-width-label {
+  font-size: 2.4rem;
+  max-width: 75%;
+}
+
+.form-check .form-check-input {
+  float: unset!important;
+  margin-left: 0px!important;
+}

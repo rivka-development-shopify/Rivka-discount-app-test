@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "NODE_ENV=production remix build",
-    "predev": "prisma generate && prisma migrate deploy",
+    "predev": "prisma generate && prisma db push",
     "dev": "shopify app dev",
     "ngrok-dev": "npm run dev -- --tunnel-url https://623d-181-31-154-153.ngrok-free.app:62132",
     "config:link": "shopify app config link",
@@ -16,7 +16,7 @@
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "shopify": "shopify",
     "prisma": "prisma",
-    "setup": "prisma generate && prisma migrate deploy"
+    "setup": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^4.13.0",
