@@ -16,8 +16,7 @@ import {
   TextField,
   FormLayout,
   InlineError,
-  FooterHelp,
-  Divider
+  FooterHelp
 } from "@shopify/polaris";
 
 
@@ -32,8 +31,6 @@ import { parseFormDataToJson } from '../utils/formatData';
 import shopify from "../shopify.server";
 
 import DiscountSelector from "~/components/DiscountSelector";
-import ProductPicker from "~/components/ProductsPicker";
-import CollectionsPicker from "~/components/CollectionsPicker";
 
 // this is the method "get"
 export const loader = async ({ request, params }) => {
@@ -134,20 +131,12 @@ export default function Index() {
 
   const [discountCode, setDiscountCode] = useState(loaderDiscount != null? loaderDiscount.code : '')
   const [selectedDiscounts, setSelectedDiscount] = useState(loaderDiscount != null? loaderDiscount.stackDiscounts : [])
-  const [productsToApply, setProductsToApply] = useState(loaderDiscount != null? loaderDiscount.productsToApply : [])
-  const [productsToIgnore, setProductsToIgnore] = useState(loaderDiscount != null? loaderDiscount.productsToIgnore : [])
-  const [collectionsToApply, setCollectionsToApply] = useState(loaderDiscount != null? loaderDiscount.collectionsToApply : [])
-  const [collectionsToIgnore, setCollectionsToIgnore] = useState(loaderDiscount != null? loaderDiscount.collectionsToIgnore : [])
 
 
   useEffect(() => {
     if(actionData != null) {
       setDiscountCode(actionData.discountCode.code);
-      setProductsToApply(actionData.discountCode.productsToApply)
-      setProductsToIgnore(actionData.discountCode.productsToIgnore)
       setSelectedDiscount(actionData.discountCode.stackDiscounts)
-      setCollectionsToApply(actionData.discountCode.collectionsToApply)
-      setCollectionsToIgnore(actionData.discountCode.collectionsToIgnore)
     }
   },
   [actionData])
@@ -155,11 +144,7 @@ export default function Index() {
   useEffect(() => {
     if(loaderDiscount != null) {
       setDiscountCode(loaderDiscount.code);
-      setProductsToApply(loaderDiscount.productsToApply)
-      setProductsToIgnore(loaderDiscount.productsToIgnore)
       setSelectedDiscount(loaderDiscount.stackDiscounts)
-      setCollectionsToApply(loaderDiscount.collectionsToApply)
-      setCollectionsToIgnore(loaderDiscount.collectionsToIgnore)
     }
   },
   [loaderDiscount])
@@ -179,22 +164,11 @@ export default function Index() {
 
 
   const handleTestButton = () => {
-    console.log(collectionsToApply)
-  }
-
-  const handleAddProductsToApply = (value) => {
-    setProductsToApply(value)
-  };
-
-  const handleAddProductsToIgnore = (value) => {
-    setProductsToIgnore(value)
-  }
-
-  const handleAddCollectionsToIgnore = (value) => {
-    setCollectionsToIgnore(value)
-  }
-  const handleAddCollectionsToApply = (value) => {
-    setCollectionsToApply(value)
+    console.log({
+      discountCodeId,
+      discountCode,
+      stackDiscounts: selectedDiscounts
+    })
   }
 
   const handleFormSubmit = () => {
@@ -202,11 +176,7 @@ export default function Index() {
       discount: JSON.stringify({
         discountCodeId,
         discountCode,
-        stackDiscounts: selectedDiscounts,
-        productsToApply,
-        collectionsToApply,
-        productsToIgnore,
-        collectionsToIgnore
+        stackDiscounts: selectedDiscounts
       })
     }, {method: 'PUT'})
   }
@@ -237,36 +207,6 @@ export default function Index() {
               options={shopifyCurrentDiscounts ? shopifyCurrentDiscounts : []}
               value={selectedDiscounts}
               onChange={(newValue) => { handleDiscountSelectorChange(newValue)}}
-            />
-
-
-            <Divider />
-
-            <ProductPicker
-              title="Products to apply discount"
-              value={productsToApply}
-              onChange={(newValue) => { handleAddProductsToApply(newValue)}}
-            />
-            <CollectionsPicker
-              title="Collections to apply the discount"
-              emptyText="No collections to apply discount added yet."
-              value={collectionsToApply}
-              onChange={(newValue) => { handleAddCollectionsToApply(newValue)}}
-            />
-
-            <Divider />
-
-            <ProductPicker
-              title="Products to ignore the discount"
-              value={productsToIgnore}
-              onChange={(newValue) => { handleAddProductsToIgnore(newValue)}}
-            />
-
-            <CollectionsPicker
-              title="Collections to ignore the discount"
-              emptyText="No collections to ignore discount added yet."
-              value={collectionsToIgnore}
-              onChange={(newValue) => { handleAddCollectionsToIgnore(newValue)}}
             />
           </FormLayout>
         </LegacyCard>
