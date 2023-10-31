@@ -1,4 +1,4 @@
-query RunInput {
+query RunInput($selectedCollectionIds: [ID!]) {
   cart {
     lines {
       quantity
@@ -7,6 +7,10 @@ query RunInput {
         ... on ProductVariant {
           id
           sku
+          product {           
+            id
+            inAnyCollection(ids: $selectedCollectionIds)
+          }
         }
       }
     }

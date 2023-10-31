@@ -18,3 +18,7 @@ type = "function"
   [extensions.ui.paths]
   create = "/app/sku-discount/:functionId/new"
   details = "/app/sku-discount/:functionId/:id"
+
+  [extensions.input.variables]
+  namespace = "$app:sku-discount"
+  key = "function-configuration"

@@ -94,7 +94,7 @@ export const action = async ({ params, request }) => {
                 value: JSON.stringify({
                   quantity: configuration.quantity,
                   percentage: configuration.percentage,
-                  sku: configuration.sku,
+                  sku: configuration.sku,                  
                 }),
               },
             ],

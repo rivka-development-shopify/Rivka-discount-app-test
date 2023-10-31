@@ -1,7 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { json } from "@remix-run/node";
 import { useForm, useField } from "@shopify/react-form";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { useAppBridge, ResourcePicker } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
 import { CurrencyCode } from "@shopify/react-i18n";
 import {
@@ -31,6 +31,7 @@ import {
   PageActions,
   TextField,
   VerticalStack,
+  Button,
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
@@ -94,6 +95,8 @@ export const action = async ({ params, request }) => {
                   quantity: configuration.quantity,
                   percentage: configuration.percentage,
                   sku: configuration.sku,
+                  selectedCollectionIds: configuration.selectedCollectionIds,
+                  title: "Mi titulo"
                 }),
               },
             ],
@@ -130,6 +133,7 @@ export const action = async ({ params, request }) => {
                   quantity: configuration.quantity,
                   percentage: configuration.percentage,
                   sku: configuration.sku,
+                  selectedCollectionIds: configuration.selectedCollectionIds,
                 }),
               },
             ],
@@ -157,6 +161,8 @@ export default function VolumeNew() {
   const currencyCode = CurrencyCode.Cad;
   const submitErrors = actionData?.errors || [];
   const redirect = Redirect.create(app);
+
+  const [resourcePickerOpen, setResourcePickerOpen] = useState(false);
 
   useEffect(() => {
     if (actionData?.errors.length === 0) {
@@ -219,6 +225,7 @@ export default function VolumeNew() {
           quantity: parseInt(form.configuration.quantity),
           percentage: parseFloat(form.configuration.percentage),
           sku: form.configuration.sku,
+          selectedCollectionIds: ["gid://shopify/Collection/292321001624"] 
         },
       };
 
@@ -291,6 +298,8 @@ export default function VolumeNew() {
                     {...configuration.percentage}
                     suffix="%"
                   />
+                  <Button fullWidth onClick={() => setResourcePickerOpen(!resourcePickerOpen)}>Select Collection</Button>
+                  <ResourcePicker resourceType="Collection" open={resourcePickerOpen} onCancel={() => setResourcePickerOpen(!resourcePickerOpen)} />
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
