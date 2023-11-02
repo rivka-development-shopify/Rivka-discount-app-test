@@ -219,6 +219,8 @@ type CartLine {
   """
   quantity: Int!
 
+  product: Product!
+
   """
   The selling plan associated with the cart line and the effect that each
   selling plan has on variants when they're purchased.
@@ -2548,6 +2550,10 @@ type Customer implements HasMetafields {
   numberOfOrders: Int!
 }
 
+
+scalar JSON
+
+
 """
 Represents an [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)-encoded date string.
 For example, September 7, 2019 is represented as `"2019-07-16"`.
@@ -3843,6 +3849,9 @@ input Percentage {
 Represents a product.
 """
 type Product implements HasMetafields {
+
+  customData: JSON
+
   """
   A unique human-friendly string of the product's title.
   """
