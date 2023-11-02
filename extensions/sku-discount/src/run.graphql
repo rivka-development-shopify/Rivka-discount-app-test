@@ -1,4 +1,4 @@
-query RunInput {
+query RunInput($selectedCollectionIds: [ID!]) {
   cart {
     lines {
       quantity
@@ -7,13 +7,21 @@ query RunInput {
         ... on ProductVariant {
           id
           sku
+          product {
+            id
+            inAnyCollection(ids: $selectedCollectionIds)
+          }
+          metafield(key: "sale_item", namespace: "twc") {
+            type
+            value
+          }
         }
       }
     }
   }
   discountNode {
     metafield(
-      namespace: "$app:sku-discount", 
+      namespace: "$app:sku-discount",
       key: "function-configuration"
     ) {
       value

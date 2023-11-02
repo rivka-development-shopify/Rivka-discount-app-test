@@ -49,6 +49,8 @@ export const action = async ({ request }) => {
         session: adminSession,
       })
 
+      admin.rest.resouse
+
       const productsDetails = await Promise.all(
         body.cartProducts.map(async ({productId, productVariantId}) => {
           try {
@@ -64,18 +66,18 @@ export const action = async ({ request }) => {
                     }
                   }
                   variants (first: 250) {
-                      edges {
-                          node {
-                              id
-                              price {
-                                amount
-                                currencyCode
-                              }
-                              metafield (namespace: "twc", key: "sale_item") {
-                                value
-                              }
-                          }
+                    edges {
+                      node {
+                        id
+                        price {
+                          amount
+                          currencyCode
+                        }
+                        metafield (namespace: "twc", key: "sale_item") {
+                          value
+                        }
                       }
+                    }
                   }
                 }
               }
