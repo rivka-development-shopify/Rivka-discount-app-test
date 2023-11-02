@@ -11,6 +11,10 @@ query RunInput($selectedCollectionIds: [ID!]) {
             id
             inAnyCollection(ids: $selectedCollectionIds)
           }
+          metafield(key: "sale_item", namespace: "twc") {
+            type
+            value
+          }
         }
       }
     }

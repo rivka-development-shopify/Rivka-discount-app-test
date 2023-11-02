@@ -34,14 +34,14 @@ export function run(input) {
   if (!configuration.sku || !configuration.percentage) {
     return EMPTY_DISCOUNT;
   }
-  console.log(JSON.stringify(configuration, null, 2))
+  
   const targets = input.cart.lines
     .filter(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
-      if (variant.product.inAnyCollection) {
+      if (!variant.product.inAnyCollection) {
         return console.log('Some product(s) in your cart are not elegible for this discount')
       } else {
-        return variant.sku == configuration.sku  && line.merchandise.__typename == "ProductVariant"      
+        return variant.metafield?.value == "true" && line.merchandise.__typename == "ProductVariant"      
       }
     })
     .map(line => {

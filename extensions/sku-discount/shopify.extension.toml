@@ -22,3 +22,7 @@ type = "function"
   [extensions.input.variables]
   namespace = "$app:sku-discount"
   key = "function-configuration"
+
+  [[extensions.metafields]]
+  namespace = "twc"
+  key = "sale_item"
