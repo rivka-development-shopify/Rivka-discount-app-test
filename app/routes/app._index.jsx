@@ -1,279 +1,173 @@
-import { useEffect } from "react";
-import { json } from "@remix-run/node";
+import { useEffect, useState } from "react";
+import { json, redirect } from "@remix-run/node";
+
 import {
+  useSubmit,
   useActionData,
   useLoaderData,
-  useNavigation,
-  useSubmit,
-  Link as RLink
+  useRevalidator,
+  Link
 } from "@remix-run/react";
 import {
   Page,
-  Layout,
-  Text,
-  VerticalStack,
-  Card,
+  LegacyCard,
   Button,
-  HorizontalStack,
-  Box,
-  Divider,
-  List,
-  Link,
+  Text,
+  IndexTable
 } from "@shopify/polaris";
+
+import {
+  DeleteMinor
+} from '@shopify/polaris-icons';
+
+import Switch from "../components/Switch";
 
 import { authenticate } from "../shopify.server";
 
+import {
+  deleteDiscountCode,
+  createNewDiscountCode,
+  toggleDiscountCode,
+  getAllDiscountCodes
+} from '../controllers/discountCodesControllers';
+import { parseFormDataToJson } from '../utils/formatData';
+
+// this is the method "get"
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
-
-  return json({ shop: session.shop.replace(".myshopify.com", "") });
+  const discountCodes = await getAllDiscountCodes();
+  return json({ shop: session.shop.replace(".myshopify.com", ""), discountCodes });
 };
 
+
+// every time the submit fuction runs ends up here
 export async function action({ request }) {
-  const { admin } = await authenticate.admin(request);
+  try {
+    // easier to work with JSON better then to work with FormData object
+    const body = parseFormDataToJson(await request.formData())
 
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
-  const response = await admin.graphql(
-    `#graphql
-      mutation populateProduct($input: ProductInput!) {
-        productCreate(input: $input) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        input: {
-          title: `${color} Snowboard`,
-          variants: [{ price: Math.random() * 100 }],
-        },
-      },
+    switch(request.method) {
+      case 'POST':
+        await createNewDiscountCode(body);
+        break;
+      case 'DELETE':
+        await deleteDiscountCode(body.discountCodeId);
+        break;
+      case 'PUT':
+        await toggleDiscountCode(body.discountCodeId, body.enabled);
+        break;
     }
-  );
 
-  const responseJson = await response.json();
-
-  return json({
-    product: responseJson.data.productCreate.product,
-  });
+    return { discountCodes: await getAllDiscountCodes() };
+  } catch (e) {
+    console.error({ msg: "Error on remix landing page action", err: e})
+    return null
+  }
 }
 
 export default function Index() {
-  const nav = useNavigation();
-  const { shop } = useLoaderData();
-  const actionData = useActionData();
   const submit = useSubmit();
-
-  const isLoading =
-    ["loading", "submitting"].includes(nav.state) && nav.formMethod === "POST";
-
-  const productId = actionData?.product?.id.replace(
-    "gid://shopify/Product/",
-    ""
-  );
+  const actionData = useActionData();
+  const { discountCodes: loaderDiscountCodes } = useLoaderData();
+  const [discountCodes, setDiscountCodes] = useState(loaderDiscountCodes);
+  const revalidator = useRevalidator();
 
   useEffect(() => {
-    if (productId) {
-      shopify.toast.show("Product created");
+    if(actionData != null) {
+      setDiscountCodes(actionData.discountCodes);
     }
-  }, [productId]);
+  },
+  [actionData])
 
-  const generateProduct = () => submit({}, { replace: true, method: "POST" });
+
+  const handleNewDiscountCode = () => {
+    submit({}, {method: "POST"})
+  };
+
+  const handleToggleSwitch = (discountCodeId, value) => {
+    submit({ discountCodeId, enabled: !value }, {method: "PUT"})
+  };
+
+  const handleDeleteDiscountCode = async (discountCodeId) => {
+    submit({ discountCodeId }, {method: "DELETE"})
+  };
 
   return (
-    <Page>
-      <ui-title-bar title="Remix app template">
-        <button variant="primary" onClick={generateProduct}>
-          Generate a product
-        </button>
-      </ui-title-bar>
-      <VerticalStack gap="5">
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <VerticalStack gap="5">
-                <VerticalStack gap="2">
-                  <Text as="h2" variant="headingMd">
-                    Congrats on creating a new Shopify app 🎉
-                  </Text>
-                  <RLink to="/app/volume-discount/:functionId/new">Create Discount</RLink>                  
-                  <Text variant="bodyMd" as="p">
-                    This embedded app template uses{" "}
-                    <Link
-                      url="https://admin.shopify.com/store/rivka-testing-store/apps/discount-app-test-11/app/volume-discount/0dfa920d-29b2-4c70-ab2f-1d2e3768ff52/new"
-                      target="_self"
-                    >
-                      App Bridge
-                    </Link>{" "}
-                    interface examples like an{" "}
-                    <Link url="/app/additional">
-                      additional page in the app nav
+    <Page
+      title="Custom Discount Codes"
+      subtitle="Create your own shopify discount codes"
+      divider={true}
+      primaryAction={{content: "Add New Custom Discount Code", onAction: handleNewDiscountCode  }}
+      fullWidth={false}
+    >
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossOrigin="anonymous"/>
+
+      {/* //ADD A SHOPIFY POLARIS SAVE BAR EVERYTIME discountCodeS STATE IS DIFFERENT FROM ORIGINAL discountCodeS */}
+      <div className="discount-list">
+        <LegacyCard title="Your Discount Codes" sectioned>
+          <IndexTable
+            resourceName={{singular: 'discount', plural: 'discounts'}}
+            headings={[
+              {title: 'Discount Code'},
+              {title: 'Status'},
+              {title: 'Delete', hidden: true}
+            ]}
+            itemCount={discountCodes.length}
+            selectable={false}
+          >
+            {discountCodes.map((discountCode, index) => (
+              <IndexTable.Row
+                id={`${discountCode.id}`}
+                key={index}
+                position={index}
+              >
+                  <IndexTable.Cell>
+                    <Link to={`/app/discount_edit/${discountCode.id}`} style={{ textDecoration: 'none', color: 'unset'}}>
+                      <Text as={"dd"} >{discountCode.code}</Text>
                     </Link>
-                    , as well as an{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql"
-                      target="_blank"
-                    >
-                      Admin GraphQL
-                    </Link>{" "}
-                    mutation demo, to provide a starting point for app
-                    development.
-                  </Text>
-                </VerticalStack>
-                <VerticalStack gap="2">
-                  <Text as="h3" variant="headingMd">
-                    Get started with products
-                  </Text>
-                  <Text as="p" variant="bodyMd">
-                    Generate a product with GraphQL and get the JSON output for
-                    that product. Learn more about the{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
-                      target="_blank"
-                    >
-                      productCreate
-                    </Link>{" "}
-                    mutation in our API references.
-                  </Text>
-                </VerticalStack>
-                <HorizontalStack gap="3" align="end">
-                  {actionData?.product && (
-                    <Button
-                      url={`https://admin.shopify.com/store/${shop}/admin/products/${productId}`}
-                      target="_blank"
-                    >
-                      View product
-                    </Button>
-                  )}
-                  <Button loading={isLoading} primary onClick={generateProduct}>
-                    Generate a product
-                  </Button>
-                </HorizontalStack>
-                {actionData?.product && (
-                  <Box
-                    padding="4"
-                    background="bg-subdued"
-                    borderColor="border"
-                    borderWidth="1"
-                    borderRadius="2"
-                    overflowX="scroll"
-                  >
-                    <pre style={{ margin: 0 }}>
-                      <code>{JSON.stringify(actionData.product, null, 2)}</code>
-                    </pre>
-                  </Box>
-                )}
-              </VerticalStack>
-            </Card>
-          </Layout.Section>
-          <Layout.Section secondary>
-            <VerticalStack gap="5">
-              <Card>
-                <VerticalStack gap="2">
-                  <Text as="h2" variant="headingMd">
-                    App template specs
-                  </Text>
-                  <VerticalStack gap="2">
-                    <Divider />
-                    <HorizontalStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Framework
-                      </Text>
-                      <Link url="https://remix.run" target="_blank">
-                        Remix
-                      </Link>
-                    </HorizontalStack>
-                    <Divider />
-                    <HorizontalStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Database
-                      </Text>
-                      <Link url="https://www.prisma.io/" target="_blank">
-                        Prisma
-                      </Link>
-                    </HorizontalStack>
-                    <Divider />
-                    <HorizontalStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Interface
-                      </Text>
-                      <span>
-                        <Link url="https://polaris.shopify.com" target="_blank">
-                          Polaris
-                        </Link>
-                        {", "}
-                        <Link
-                          url="https://shopify.dev/docs/apps/tools/app-bridge"
-                          target="_blank"
-                        >
-                          App Bridge
-                        </Link>
-                      </span>
-                    </HorizontalStack>
-                    <Divider />
-                    <HorizontalStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        API
-                      </Text>
-                      <Link
-                        url="https://shopify.dev/docs/api/admin-graphql"
-                        target="_blank"
-                      >
-                        GraphQL API
-                      </Link>
-                    </HorizontalStack>
-                  </VerticalStack>
-                </VerticalStack>
-              </Card>
-              <Card>
-                <VerticalStack gap="2">
-                  <Text as="h2" variant="headingMd">
-                    Next steps
-                  </Text>
-                  <List spacing="extraTight">
-                    <List.Item>
-                      Build an{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/getting-started/build-app-example"
-                        target="_blank"
-                      >
-                        {" "}
-                        example app
-                      </Link>{" "}
-                      to get started
-                    </List.Item>
-                    <List.Item>
-                      Explore Shopify’s API with{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-                        target="_blank"
-                      >
-                        GraphiQL
-                      </Link>
-                    </List.Item>
-                  </List>
-                </VerticalStack>
-              </Card>
-            </VerticalStack>
-          </Layout.Section>
-        </Layout>
-      </VerticalStack>
+                  </IndexTable.Cell>
+
+                  <IndexTable.Cell>
+                    <Switch
+                      name="enabled"
+                      id="enbled"
+                      labelStyle={{
+                        display: "none"
+                      }}
+                      checked={discountCode.enabled}
+                      onChange={(e) => {e.preventDefault(); handleToggleSwitch(discountCode.id, discountCode.enabled)}}
+                      label=""
+                    />
+                  </IndexTable.Cell>
+
+                  <IndexTable.Cell>
+                    <div className="delete-button" style={{display: "flex", alignItems: "center", justifyContent: "flex-end"}}>
+                      <Button
+                        size="micro"
+                        textAlign="center"
+                        icon={DeleteMinor}
+                        onClick={(e) => {e.preventDefault(); handleDeleteDiscountCode(discountCode.id)}}
+                      ></Button>
+                    </div>
+                  </IndexTable.Cell>
+              </IndexTable.Row>
+            ))}
+          </IndexTable>
+
+        </LegacyCard>
+      </div>
     </Page>
   );
 }
+
+
+
+{/* <ResourcePicker
+selectMultiple={true}
+open={showPicker}
+showVariants={false}
+resourceType={pickerType}
+initialSelectionIds={pickerInitialSelectionIds}
+onSelection={({selection}) => {handlePickerSelection(selection)}}
+onCancel={(e) => {clearPickerState()}}
+/> */}

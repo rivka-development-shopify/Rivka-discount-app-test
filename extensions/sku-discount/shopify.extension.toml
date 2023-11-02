@@ -1,7 +1,7 @@
 api_version = "2023-10"
 
 [[extensions]]
-handle = "product-discount-rust"
+handle = "sku-discount"
 name = "t:name"
 description = "t:description"
 type = "function"
@@ -12,10 +12,9 @@ type = "function"
   export = "run"
 
   [extensions.build]
-  command = "cargo wasi build --release"
-  path = "target/wasm32-wasi/release/product-discount-rust.wasm"
-  watch = ["src/**/*.rs"]
+  command = ""
+  path = "dist/function.wasm"
 
   [extensions.ui.paths]
-  create = "/app/volume-discount/:functionId/new"
-  details = "/app/volume-discount/:functionId/:id"
+  create = "/app/sku-discount/:functionId/new"
+  details = "/app/sku-discount/:functionId/:id"

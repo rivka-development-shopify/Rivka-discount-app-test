@@ -1,0 +1,240 @@
+1 - model and create database { 1 dia
+  NEEDS: {
+    model db
+    create tables
+    migrate
+    create model for discount code -> {`
+     NEEDS: {
+      id
+      discount_code
+      enabled
+      apply_product_variant_id_list -> many2many
+      apply_collection_id_list -> many2many
+      ignore_product_variant_id_list -> many2many
+      ignore_collection_id_list -> many2many
+      shopify_created_discount_code
+
+      non relational?
+     }
+    }
+    seed
+  }
+}
+
+2 - create landing page => { 2 dias ok
+  NEEDS: {
+    list current discount codes -> {
+      DESCRIPTION: opens discount code detail page for respective discount code.
+      NEEDS: {
+        get from database and render on landing page
+        Button: delete button -> {
+          delete from database
+          graphql request to delete custom discount shopify function
+        }
+        <list> Link: discount code edit link -> goto discount detail page
+
+      }
+    }
+    Button: add new discount code button -> {
+      create on database
+      request to create discount code shopify function opens a empty discount code detail page
+    }
+  }
+}
+
+3 - create discount detail page => { 2 dias
+  NEEDS: {
+    FORM -> {
+      discount_code <string> -> code which the client will use to apply discount
+      type of discount <selector> -> percentage or BxGy
+      list of staked existing discounts
+      polaris: list of applied products by variant/collections -> products that the discount will apply
+      polaris: list of excluded products by variant/collections -> products that the discount will ignore even if its on the list of applied
+    optional: on/off switch <bool> -> enables/disables code
+
+    }
+    submit -> {
+      updates on database
+      send update graphql request
+    }
+  }
+}
+
+4 - create shopfiy function for updating custom discount => { 5 dias
+  DESCRIPTION: updates a already existing discount to a new discount rule
+  NEEDS: {
+    create extention
+    create graphql input schema -> {
+      string of dicount code
+      list of apply collections
+      list of apply handpicked variants
+      list of ignore collections
+      list of ignore handpicked variants
+      bool of on/off
+    }
+    create run logic -> same logic as creating -> {
+      get all products and variants from the collection list of apply products
+      append the products and variants handpicked
+
+      remove all collections and variants that are on the ignore products list
+
+      add stacked discounts for these list of products
+
+      get the rule
+      create a new discount for this products with the certain functionality
+    }
+
+  }
+}
+
+5 - create shopfiy function for deleting custom discount => { 2 dias
+  DESCRIPTION: deletes a existing discount
+  NEEDS: {
+    create extention
+    create graphql input schema -> {
+      discount_code
+    }
+    create run logic -> {
+      get created discount for this dicount_code and delete it
+    }
+  }
+}
+
+discountCOde.get(id)
+
+6 - create shopfiy function for creating custom discount => { 2 dias
+  DESCRIPTION: creates a custom discount based on the rules that we're sending via form
+  NEEDS: {
+    create extention
+    create graphql schema -> same as update
+    create run logic -> same logic as update
+  }
+}
+
+7 - connect ui form to shopify function => { 2 dias
+  DESCRIPTION: on form submit make a function that will send the ui form data to the custom discount
+  NEEDS: {
+    retrieve data from form
+    create admin graphql instange
+    transpile from for to graphql
+    request
+    error handling
+
+  }
+}
+
+8 - create shopify bundle for adding our discount codes field => { 5 dias
+  DESCRIPTION: since shopify add discount code field is limited we need to create our own
+  NEDS: {
+    javascript bundle that creates the discount code field on the cart drawer {
+      NEEDS: {
+        create components {
+          NEEDS: {
+            input
+            send button
+            handle response
+          }
+        }
+        add to embedded div
+        compile
+      optional: bundle authentication
+
+      }
+    }
+  }
+}
+
+
+
+mongod --replSet local-replica-set --port 27017 --dbpath 'C:\Program Files\MongoDB\Server\7.0\data' --authenticationDatabase "admin" --username "root" --password "1234"
+
+
+
+
+
+query {
+  discountNodes(first: 3) {
+    edges {
+      node {
+        id
+        discount {
+          ... on DiscountCodeBasic {
+            title
+            codes(first: 5) {
+              edges {
+                node {
+                  code
+                }
+              }
+            }
+          }
+          ... on DiscountCodeBxgy {
+            title
+						codes(first: 5) {
+              edges {
+                node {
+                  code
+                }
+              }
+            }
+          }
+          ... on DiscountCodeFreeShipping {
+            title
+            codes(first: 5) {
+              edges {
+                node {
+                  code
+                }
+              }
+            }
+
+          }
+          ... on DiscountAutomaticApp {
+            title
+            codes(first: 5) {
+              edges {
+                node {
+                  code
+                }
+              }
+            }
+
+          }
+          ... on DiscountAutomaticBasic {
+            title
+            codes(first: 5) {
+              edges {
+                node {
+                  code
+                }
+              }
+            }
+
+          }
+          ... on DiscountAutomaticBxgy {
+            title
+            codes(first: 5) {
+              edges {
+                node {
+                  code
+                }
+              }
+            }
+
+          }
+          ... on DiscountAutomaticFreeShipping {
+            title
+            codes(first: 5) {
+              edges {
+                node {
+                  code
+                }
+              }
+            }
+
+          }
+        }
+      }
+    }
+  }
+}

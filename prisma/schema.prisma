@@ -1,17 +1,19 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "sqlite"
-  url      = "file:dev.sqlite"
-}
 
 model Session {
-  id          String    @id
+  session_id  String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @unique
   shop        String
   state       String
   isOnline    Boolean   @default(false)
@@ -19,4 +21,11 @@ model Session {
   expires     DateTime?
   accessToken String
   userId      BigInt?
+}
+
+model DiscountCode {
+  id                    String            @id @map("_id") @default(auto()) @db.ObjectId
+  code                  String
+  enabled               Boolean
+  stackDiscounts        String[]
 }

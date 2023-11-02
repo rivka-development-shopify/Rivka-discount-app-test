@@ -1,4 +1,4 @@
-query Input {
+query RunInput {
   cart {
     lines {
       quantity
@@ -6,13 +6,14 @@ query Input {
         __typename
         ... on ProductVariant {
           id
+          sku
         }
       }
     }
   }
   discountNode {
     metafield(
-      namespace: "$app:volume-discount"
+      namespace: "$app:sku-discount", 
       key: "function-configuration"
     ) {
       value
