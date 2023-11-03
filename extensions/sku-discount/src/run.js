@@ -38,11 +38,16 @@ export function run(input) {
   const targets = input.cart.lines
     .filter(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
-      if (!variant.product.inAnyCollection) {
+      const search = variant.product.inCollections;
+      const found = search.filter(item => item.isMember);
+      found?.forEach(item => console.log("founded: ", item.isMember, item.collectionId));
+      
+      return variant.product.inCollections.filter(item => item.collectionId == "293047468184") && line.merchandise.__typename == "ProductVariant"
+      /* if (!variant.product.inAnyCollection) {
         return console.log('Some product(s) in your cart are not elegible for this discount')
       } else {
         return variant.metafield?.value == "true" && line.merchandise.__typename == "ProductVariant"      
-      }
+      } */
     })
     .map(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);

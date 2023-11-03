@@ -225,7 +225,7 @@ export default function VolumeNew() {
           quantity: parseInt(form.configuration.quantity),
           percentage: parseFloat(form.configuration.percentage),
           sku: form.configuration.sku,
-          selectedCollectionIds: ["gid://shopify/Collection/292321001624"] 
+          selectedCollectionIds: ["gid://shopify/Collection/293047468184", "gid://shopify/Collection/293047500952", "gid://shopify/Collection/293047337112"] 
         },
       };
 
