@@ -32,9 +32,15 @@ import {
   TextField,
   VerticalStack,
   Button,
+  LegacyCard,
+  ResourceList,
+  Avatar,
+  ResourceItem,
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
+
+import { CollectionsPicker } from "../components/CollectionsPicker";
 
 // This is a server-side action that is invoked when the form is submitted.
 // It makes an admin GraphQL request to create a discount.
@@ -161,10 +167,9 @@ export default function VolumeNew() {
   const currencyCode = CurrencyCode.Cad;
   const submitErrors = actionData?.errors || [];
   const redirect = Redirect.create(app);
+  
 
-  const [resourcePickerOpen, setResourcePickerOpen] = useState(false);
-
-  useEffect(() => {
+  useEffect(() => {    
     if (actionData?.errors.length === 0) {
       redirect.dispatch(Redirect.Action.ADMIN_SECTION, {
         name: Redirect.ResourceType.Discount,
@@ -297,9 +302,8 @@ export default function VolumeNew() {
                     autoComplete="on"
                     {...configuration.percentage}
                     suffix="%"
-                  />
-                  <Button fullWidth onClick={() => setResourcePickerOpen(!resourcePickerOpen)}>Select Collection</Button>
-                  <ResourcePicker resourceType="Collection" open={resourcePickerOpen} onCancel={() => setResourcePickerOpen(!resourcePickerOpen)} />
+                  />                            
+                  <CollectionsPicker title={{...configuration.sku}} />
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
