@@ -5,8 +5,7 @@ query RunInput($selectedCollectionIds: [ID!]) {
       merchandise {
         __typename
         ... on ProductVariant {
-          id
-          sku
+          id          
           product {           
             id
             inAnyCollection(ids: $selectedCollectionIds)

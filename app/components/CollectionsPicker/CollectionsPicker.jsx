@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ResourcePicker } from '@shopify/app-bridge-react';
-import { Page, Layout, Card, Text, Button } from '@shopify/polaris';
+import { Page, Layout, Card, Text, Button, ResourceList, Avatar, Thumbnail, ResourceItem, LegacyStack } from '@shopify/polaris';
 
 export function CollectionsPicker(props) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCollections, setSelectedCollections] = useState([]);
-  const [initialSelection, setInitialSelection] = useState([]);
+ 
 
-  useEffect(() => {
-    if (selectedCollections.length === 0) {
-      // Load initial selection only if no selections have been made
-      setSelectedCollections(initialSelection);
-    }
-  }, [selectedCollections, initialSelection]);
-
+  console.log(props)
   const handleSelection = (selection) => {
     console.log(selection)
     setIsOpen(false);
-    setSelectedCollections(selection);
-    setInitialSelection(selection)
+    props.onChange(selection)
   };
 
   const handleOpenPicker = () => {
@@ -31,31 +23,64 @@ export function CollectionsPicker(props) {
 
   return (
     <div>
-      <Page
-        title="Collection Selector"
-        primaryAction={<Button onClick={handleOpenPicker}>Open Collection Selector</Button>}
-      >
-        <Layout>
-          <Layout.Section>
-            <Card>              
-              <ul data-selection={selectedCollections}>
-                {
-                  selectedCollections.length >= 1 &&
-                  selectedCollections.map((collection) => (
-                    <li key={collection.id}>
-                      <Text variant="headingMd" as='h2'>{collection.title}</Text>
-                    </li>
-                  ))
-                }
-              </ul>              
-            </Card>
-          </Layout.Section>
-        </Layout>
-      </Page>
+      <LegacyStack vertical={true}>
+        <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+          <Text as="h2" variant="bodyMd">
+            {props.title}
+          </Text>
+
+          <Button size="micro" onClick={() => {handleOpenPicker()}}>Add Collections</Button>
+        </div>
+        {
+          props.value.length >= 1 &&
+          
+          <ResourceList
+            resourceName={{singular: 'collection', plural: 'collections'}}
+            items={props.value}
+            showHeader={false}
+    
+            renderItem={(collection) => {
+              const titleSplit = collection.title.split(' ')
+              let initials = ''
+              if(titleSplit.length > 1) {
+                initials = collection.title.split(' ').slice(0,2).map(string => string.charAt(0)).join('').toString()
+              } else {
+                initials = collection.title.charAt(0) + collection.title.charAt(1)
+              }
+              initials = initials.toUpperCase()
+    
+              let media = <Avatar shape='square' size='small' initials={initials} name={collection.title} />;
+              if(collection.image) {
+                media = <Thumbnail size="small" source={collection.image.originalSrc} alt={collection.image.altText}/>;
+              }
+    
+              return (
+                <ResourceItem
+                  id={collection.id}
+                  media={media}
+                >
+                  <LegacyStack vertical={true} alignment='baseline'>
+                    <Text variant="bodyMd" fontWeight="bold" as="h3">
+                      {collection.title}
+                    </Text>
+                  </LegacyStack>
+                </ResourceItem>
+              );
+            }}
+            emptyState={(
+                <Card>
+                  <Text as="h2" variant="bodyMd">
+                    EMPTY
+                  </Text>
+                </Card>
+              )}
+          />        
+        }
+      </LegacyStack>
       <ResourcePicker
         resourceType="Collection"
         open={isOpen}
-        initialSelectionIds={initialSelection} // Set initial selection
+        initialSelectionIds={props.value} // Set initial selection
         onSelection={(resources) => handleSelection(resources.selection)}
         onCancel={handleCancelPicker}
       />
