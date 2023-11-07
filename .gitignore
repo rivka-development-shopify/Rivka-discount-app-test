@@ -17,10 +17,14 @@ shopify.app.toml
 
 extensions/ui-error-msgs/*
 extensions/ui-error-msgs/dist
+extensions/ui-error-msgs/dist/*
+extensions/ui-error-msgs/dist/*
 
 extensions/product-discount-js/*
 
 extensions/douglas-discount/*
+extensions/douglas-discount/ui-error-msgs.js
+extensions/douglas-discount/ui-error-msgs.js.map
 
 extensions/sku-discount/dist
 extensions/sku-discount/generated
