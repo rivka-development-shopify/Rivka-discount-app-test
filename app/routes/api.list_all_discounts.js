@@ -3,6 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import shopify, { authenticate, sessionStorage } from "../shopify.server";
 import prisma from "../db.server";
 
+import { cors } from 'remix-utils/cors';
 
 
 export const action = async ({ request }) => {
@@ -103,10 +104,14 @@ export const action = async ({ request }) => {
         })
       )
 
-      return json(
+      const response = json(
         {
-          productsDetails,
-          priceRules
+          body: {
+            data: {
+              productsDetails,
+              priceRules
+            }
+          }
         },
         {
           status: 200,
@@ -115,6 +120,7 @@ export const action = async ({ request }) => {
           },
         }
       );
+      return await cors(request, response);
     }
     catch(e) {
       if(e.type) {
@@ -122,9 +128,13 @@ export const action = async ({ request }) => {
           case 'InexistentDiscountCode':
           case 'IncorrectBody':
             console.error(e)
-            return json(
+            const response = json(
               {
-                err: 'Bad Request'
+                body: {
+                  data: {
+                    err: 'Bad Request'
+                  }
+                }
               },
               {
                 status: 400,
@@ -132,7 +142,8 @@ export const action = async ({ request }) => {
                   "Content-Type": "application/json",
                 },
               }
-            )
+            );
+            return await cors(request, response);
             break;
         }
       } else {
@@ -140,9 +151,13 @@ export const action = async ({ request }) => {
           err: "API Error calculating price discount for bundle",
           msg: e
         })
-        return json(
+        const response = json(
           {
-            err: 'Internal Server Error'
+            body: {
+              data: {
+                err: 'Internal Server Error'
+              }
+            }
           },
           {
             status: 500,
@@ -150,14 +165,19 @@ export const action = async ({ request }) => {
               "Content-Type": "application/json",
             },
           }
-        )
+        );
+        return await cors(request, response);
       }
     }
 
   } else {
-    return json(
+    const response = json(
       {
-        err: 'Bad Request'
+        body: {
+          data: {
+            err: 'Bad Request'
+          }
+        }
       },
       {
         status: 400,
@@ -165,7 +185,8 @@ export const action = async ({ request }) => {
           "Content-Type": "application/json",
         },
       }
-    )
+    );
+    return await cors(request, response);
   }
 };
 
@@ -173,13 +194,20 @@ export const action = async ({ request }) => {
 
 
 export const loader = async ({ request }) => {
-  return json({
-      err: 'Bad Request'
-    },{
+  const response = json(
+    {
+      body: {
+        data: {
+          err: 'Bad Request'
+        }
+      }
+    },
+    {
       status: 400,
       headers: {
         "Content-Type": "application/json",
       },
     }
-  )
+  );
+  return await cors(request, response);
 }

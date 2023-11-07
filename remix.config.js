@@ -27,4 +27,7 @@ module.exports = {
       port: process.env.HMR_SERVER_PORT || 8002,
     },
   },
+  serverDependenciesToBundle: [
+    /^remix-utils.*/,
+  ],
 };
