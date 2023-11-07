@@ -17,7 +17,7 @@ shopify.app.toml
 extensions/ui-error-msgs
 extensions/product-discount-js
 extensions/douglas-discount
-extensions/sku-discount/dist
-extensions/sku-discount/generated
-extensions/sku-discount/target
-extensions/sku-discount/Cargo.lock
+extensions/*/dist
+extensions/*/generated
+extensions/*/target
+extensions/*/Cargo.lock
