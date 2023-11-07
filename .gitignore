@@ -14,9 +14,14 @@ package-lock.json
 yarn.lock
 
 shopify.app.toml
+
 extensions/ui-error-msgs/*
+extensions/ui-error-msgs/dist
+
 extensions/product-discount-js/*
+
 extensions/douglas-discount/*
+
 extensions/sku-discount/dist
 extensions/sku-discount/generated
 extensions/sku-discount/target
