@@ -39,8 +39,7 @@ import {
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
-
-import { CollectionsPicker } from "../components/CollectionsPicker";
+import { CollectionsPicker } from "~/components/CollectionsPicker";
 
 // This is a server-side action that is invoked when the form is submitted.
 // It makes an admin GraphQL request to create a discount.
@@ -224,7 +223,9 @@ export default function VolumeNew() {
           percentage: parseFloat(form.configuration.percentage),          
           selectedCollectionIds: belongsToCollectionIds.concat(notBelongsToCollectionIds),
           belongsToCollectionIds,
-          notBelongsToCollectionIds, 
+          notBelongsToCollectionIds,
+          belongToCollections,
+          notBelongToCollections 
         },
       };
 

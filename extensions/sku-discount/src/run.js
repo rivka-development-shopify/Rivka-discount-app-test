@@ -37,16 +37,29 @@ export function run(input) {
   }
 
   const { belongsToCollectionIds, notBelongsToCollectionIds } = configuration;
+  
   const targets = input.cart.lines
     .filter(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
-      return variant.product.inCollections.map(({ collectionId, isMember }) => {
-          if (isMember) {
-              return belongsToCollectionIds.indexOf(collectionId) > -1
-          }
-          return notBelongsToCollectionIds.indexOf(collectionId) > -1
-      }).every((value) => value === true) 
-      
+      if(belongsToCollectionIds.length >= 1 && notBelongsToCollectionIds.length >= 1) {        
+        if(variant.metafield?.value === 'false') {        
+          return variant.product.inCollections.map(({ collectionId, isMember }) => {
+              if (isMember) {
+                  return belongsToCollectionIds.indexOf(collectionId) > -1
+              }
+              return notBelongsToCollectionIds.indexOf(collectionId) > -1
+          }).every((value) => value === true)
+        }
+      }
+      if(belongsToCollectionIds.length == 0 && notBelongsToCollectionIds.length >= 1) {        
+        if(variant.metafield?.value === 'false') {        
+          return variant.product.inCollections.map(({ collectionId, isMember }) => {
+              if (!isMember) {                  
+                  return notBelongsToCollectionIds.indexOf(collectionId) > -1
+              }
+          }).every((value) => value === true)
+        }
+      }
     })
     .map(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
@@ -57,10 +70,9 @@ export function run(input) {
       });
     });
 
-  if (!targets.length) {
-    console.error("No cart lines qualify for volume discount.");
+  if (!targets.length) {    
     return EMPTY_DISCOUNT;
-  }
+  } 
 
   return {
     discounts: [

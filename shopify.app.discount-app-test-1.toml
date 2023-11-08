@@ -2,7 +2,7 @@
 
 name = "discount-app-test-1"
 client_id = "9a85ad5fab728b5a63060b94a3371abd"
-application_url = "https://point-dome-gentle-enemy.trycloudflare.com"
+application_url = "https://d577-38-51-157-130.ngrok-free.app"
 embedded = true
 
 [access_scopes]
@@ -11,9 +11,9 @@ scopes = "write_products,write_discounts"
 
 [auth]
 redirect_urls = [
-  "https://point-dome-gentle-enemy.trycloudflare.com/auth/callback",
-  "https://point-dome-gentle-enemy.trycloudflare.com/auth/shopify/callback",
-  "https://point-dome-gentle-enemy.trycloudflare.com/api/auth/callback"
+  "https://d577-38-51-157-130.ngrok-free.app/auth/callback",
+  "https://d577-38-51-157-130.ngrok-free.app/auth/shopify/callback",
+  "https://d577-38-51-157-130.ngrok-free.app/api/auth/callback"
 ]
 
 [webhooks]

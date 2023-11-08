@@ -3,12 +3,10 @@ import { ResourcePicker } from '@shopify/app-bridge-react';
 import { Page, Layout, Card, Text, Button, ResourceList, Avatar, Thumbnail, ResourceItem, LegacyStack } from '@shopify/polaris';
 
 export function CollectionsPicker(props) {
-  const [isOpen, setIsOpen] = useState(false);
- 
+  const [isOpen, setIsOpen] = useState(false); 
 
-  console.log(props)
-  const handleSelection = (selection) => {
-    console.log(selection)
+  /* console.log("Props", props) */
+  const handleSelection = (selection) => {    
     setIsOpen(false);
     props.onChange(selection)
   };

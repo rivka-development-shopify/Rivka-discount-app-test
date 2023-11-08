@@ -36,6 +36,7 @@ import {
 
 import shopify from "../shopify.server";
 import { NotFoundPage } from "../components/NotFoundPage";
+import { CollectionsPicker } from "~/components/CollectionsPicker";
 
 // This is a server-side action that is invoked when the form is submitted.
 // It makes an admin GraphQL request to update a discount.
@@ -91,11 +92,7 @@ export const action = async ({ params, request }) => {
             metafields: [
               {
                 id: configuration.metafieldId,
-                value: JSON.stringify({
-                  quantity: configuration.quantity,
-                  percentage: configuration.percentage,
-                  sku: configuration.sku,                  
-                }),
+                value: JSON.stringify(configuration),
               },
             ],
           },
@@ -126,11 +123,7 @@ export const action = async ({ params, request }) => {
             metafields: [
               {
                 id: configuration.metafieldId,
-                value: JSON.stringify({
-                  quantity: configuration.quantity,
-                  percentage: configuration.percentage,
-                  sku: configuration.sku
-                }),
+                value: JSON.stringify(configuration),
               },
             ],
           },
@@ -261,6 +254,7 @@ export default function VolumeEdit() {
   const redirect = Redirect.create(app);
 
   useEffect(() => {
+    
     if (actionData?.errors.length === 0) {
       redirect.dispatch(Redirect.Action.ADMIN_SECTION, {
         name: Redirect.ResourceType.Discount,
@@ -270,7 +264,7 @@ export default function VolumeEdit() {
 
   if (!discount) {
     return <NotFoundPage />;
-  }
+  } 
 
   const { metafieldId } = discount.configuration;
   const {
@@ -304,11 +298,15 @@ export default function VolumeEdit() {
       endDate: useField(discount.endsAt),
       configuration: {
         quantity: useField(discount.configuration.quantity),
-        percentage: useField(discount.configuration.percentage),
-        sku: useField(discount.configuration.sku),
+        percentage: useField(discount.configuration.percentage),        
+        belongToCollections: useField(discount.configuration.belongToCollections),
+        notBelongToCollections: useField(discount.configuration.notBelongToCollections),
       },
     },
-    onSubmit: async (form) => {
+    onSubmit: async (form) => {      
+      const { belongToCollections, notBelongToCollections } = form.configuration;
+      const belongsToCollectionIds = belongToCollections.map(collection => collection.id);
+      const notBelongsToCollectionIds = notBelongToCollections.map(collection => collection.id);
       const discount = {
         title: form.discountTitle,
         method: form.discountMethod,
@@ -322,10 +320,14 @@ export default function VolumeEdit() {
           metafieldId,
           quantity: parseInt(form.configuration.quantity),
           percentage: parseFloat(form.configuration.percentage),
-          sku: form.configuration.sku,          
+          selectedCollectionIds: belongsToCollectionIds.concat(notBelongsToCollectionIds),
+          belongsToCollectionIds,
+          notBelongsToCollectionIds,
+          belongToCollections,
+          notBelongToCollections           
         },
       };
-
+      console.log('Form', form.configuration)
       submitForm({ discount: JSON.stringify(discount) }, { method: "post" });
 
       return { status: "success" };
@@ -353,7 +355,7 @@ export default function VolumeEdit() {
   return (
     // Render a discount form using Polaris components and the discount app components
     <Page
-      title="Create volume discount"
+      title="Edit custom discount"
       backAction={{
         content: "Discounts",
         onAction: () => onBreadcrumbAction(redirect, true),
@@ -370,7 +372,7 @@ export default function VolumeEdit() {
           <Form method="post">
             <VerticalStack align="space-around" gap="2">
               <MethodCard
-                title="Volume"
+                title="Custom"
                 discountTitle={discountTitle}
                 discountClass={DiscountClass.Product}
                 discountCode={discountCode}
@@ -379,21 +381,16 @@ export default function VolumeEdit() {
               <Card>
                 <VerticalStack gap="3">
                   <Text variant="headingMd" as="h2">
-                    Volume
-                  </Text>
-                  <TextField
-                    label="Product SKUs (Required)"                                      
-                    maxLength={550}
-                    autoComplete="off"                    
-                    helpText="Enter all skus seperated by comma (e.g. sku001, sku002, sku003)"
-                    {...configuration.sku}
-                  />
+                    Custom Discount
+                  </Text>                  
                   <TextField
                     label="Discount percentage"
                     autoComplete="on"
                     {...configuration.percentage}
                     suffix="%"
                   />
+                  <CollectionsPicker {...configuration.belongToCollections} title="Apply to collections"/>
+                  <CollectionsPicker {...configuration.notBelongToCollections} title="Not Apply to collections"/>
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
@@ -466,3 +463,4 @@ export default function VolumeEdit() {
     </Page>
   );
 }
+
