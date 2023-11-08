@@ -2550,7 +2550,6 @@ type Customer implements HasMetafields {
   numberOfOrders: Int!
 }
 
-
 scalar JSON
 
 
@@ -3891,6 +3890,7 @@ type Product implements HasMetafields {
     """
     ids: [ID!]! = []
   ): Boolean!
+  
 
   """
   Whether the product is in the given collections.

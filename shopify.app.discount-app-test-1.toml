@@ -1,0 +1,27 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "discount-app-test-1"
+client_id = "9a85ad5fab728b5a63060b94a3371abd"
+application_url = "https://d577-38-51-157-130.ngrok-free.app"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products,write_discounts"
+
+[auth]
+redirect_urls = [
+  "https://d577-38-51-157-130.ngrok-free.app/auth/callback",
+  "https://d577-38-51-157-130.ngrok-free.app/auth/shopify/callback",
+  "https://d577-38-51-157-130.ngrok-free.app/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2023-10"
+
+[pos]
+embedded = false
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "rivka-extensibility-testing.myshopify.com"
