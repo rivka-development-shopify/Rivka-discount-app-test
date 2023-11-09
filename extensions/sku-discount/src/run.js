@@ -37,9 +37,9 @@ export function run(input) {
   }
 
   const { belongsToCollectionIds, notBelongsToCollectionIds } = configuration;
-  
-  const targets = input.cart.lines
-    .filter(line => {
+
+  const validateDiscount = (lines) => {
+    return lines.filter(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
       if(belongsToCollectionIds.length >= 1 && notBelongsToCollectionIds.length >= 1) {        
         if(variant.metafield?.value === 'false') {        
@@ -59,6 +59,20 @@ export function run(input) {
               }
           }).every((value) => value === true)
         }
+        if(variant.metafield?.value === 'true') {        
+          return variant.product.inCollections.map(({ collectionId, isMember }) => {
+              if (!isMember) {                  
+                  return notBelongsToCollectionIds.indexOf(collectionId) > -1
+              }
+          }).every((value) => value === true)
+        }
+      }
+      if(belongsToCollectionIds.length >= 1 && notBelongsToCollectionIds.length == 0) {
+        return variant.product.inCollections.map(({ collectionId, isMember }) => {
+            if (isMember) {
+                return belongsToCollectionIds.indexOf(collectionId) > -1
+            }            
+        }).every((value) => value === true)
       }
     })
     .map(line => {
@@ -69,6 +83,9 @@ export function run(input) {
         }
       });
     });
+  }
+  
+  const targets = validateDiscount(input.cart.lines);    
 
   if (!targets.length) {    
     return EMPTY_DISCOUNT;

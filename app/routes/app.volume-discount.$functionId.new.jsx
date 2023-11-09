@@ -31,6 +31,7 @@ import {
   PageActions,
   TextField,
   VerticalStack,
+  Checkbox,
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
@@ -219,11 +220,11 @@ export default function VolumeNew() {
       };
 
       submitForm({ discount: JSON.stringify(discount) }, { method: "post" });
+      console.log(configuration)
 
       return { status: "success" };
     },
   });
-
   const errorBanner =
     submitErrors.length > 0 ? (
       <Layout.Section>
@@ -283,6 +284,11 @@ export default function VolumeNew() {
                     autoComplete="on"
                     {...configuration.percentage}
                     suffix="%"
+                  />
+                  <Checkbox
+                    label="Basic checkbox"
+                    checked
+                    onChange={() => console.log('Changed')}
                   />
                 </VerticalStack>
               </Card>

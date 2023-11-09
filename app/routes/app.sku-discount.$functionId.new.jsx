@@ -36,10 +36,12 @@ import {
   ResourceList,
   Avatar,
   ResourceItem,
+  Checkbox,
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
 import { CollectionsPicker } from "~/components/CollectionsPicker";
+import CustomCheckbox from "~/components/CustomCheckbox";
 
 // This is a server-side action that is invoked when the form is submitted.
 // It makes an admin GraphQL request to create a discount.
@@ -105,6 +107,7 @@ export const action = async ({ params, request }) => {
     );
 
     const responseJson = await response.json();
+    console.log("repsonse", responseJson)
     const errors = responseJson.data.discountCreate?.userErrors;
     return json({ errors });
   } else {
@@ -138,7 +141,7 @@ export const action = async ({ params, request }) => {
 
     const responseJson = await response.json();
     const errors = responseJson.data.discountCreate?.userErrors;
-    console.log(responseJson)
+    console.log("repsonse", responseJson)
     return json({ errors });
   }
 };
@@ -203,6 +206,7 @@ export default function VolumeNew() {
         percentage: useField("0"),
         belongToCollections: useField([]),
         notBelongToCollections: useField([]),
+        metafieldState: useField(false)
       },
     },
     onSubmit: async (form) => {
@@ -225,7 +229,8 @@ export default function VolumeNew() {
           belongsToCollectionIds,
           notBelongsToCollectionIds,
           belongToCollections,
-          notBelongToCollections 
+          notBelongToCollections,
+          metafieldState: form.configuration.metafieldState, 
         },
       };
 
@@ -252,7 +257,7 @@ export default function VolumeNew() {
         </Banner>
       </Layout.Section>
     ) : null;
-
+  
   return (
     // Render a discount form using Polaris components and the discount app components
     <Page
@@ -292,6 +297,7 @@ export default function VolumeNew() {
                   />                            
                   <CollectionsPicker {...configuration.belongToCollections} title="Apply to collections"/>
                   <CollectionsPicker {...configuration.notBelongToCollections} title="Not Apply to collections"/>
+                  <CustomCheckbox {...configuration.metafieldState} />                  
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
