@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { json } from "@remix-run/node";
 import { useForm, useField } from "@shopify/react-form";
 import { useAppBridge, ResourcePicker } from "@shopify/app-bridge-react";
@@ -37,11 +37,13 @@ import {
   Avatar,
   ResourceItem,
   Checkbox,
+  ChoiceList,
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
 import { CollectionsPicker } from "~/components/CollectionsPicker";
 import CustomCheckbox from "~/components/CustomCheckbox";
+import CustomChoiceList from "~/components/ChoiceList";
 
 // This is a server-side action that is invoked when the form is submitted.
 // It makes an admin GraphQL request to create a discount.
@@ -204,15 +206,24 @@ export default function VolumeNew() {
       configuration: {
         quantity: useField("0"),
         percentage: useField("0"),
-        belongToCollections: useField([]),
-        notBelongToCollections: useField([]),
+        belongToCollectionsT: useField([]),
+        notBelongToCollectionsT: useField([]),
+        belongToCollectionsF: useField([]),
+        notBelongToCollectionsF: useField([]),        
         metafieldState: useField(false)
       },
     },
     onSubmit: async (form) => {
-      const { belongToCollections, notBelongToCollections } = form.configuration;
-      const belongsToCollectionIds = belongToCollections.map(collection => collection.id);
-      const notBelongsToCollectionIds = notBelongToCollections.map(collection => collection.id);
+      const { 
+        belongToCollectionsT, 
+        notBelongToCollectionsT,
+        belongToCollectionsF, 
+        notBelongToCollectionsF,
+       } = form.configuration;
+      const belongsToCollectionTIds = belongToCollectionsT.map(collection => collection.id);
+      const notBelongsToCollectionTIds = notBelongToCollectionsT.map(collection => collection.id);
+      const belongsToCollectionFIds = belongToCollectionsF.map(collection => collection.id);
+      const notBelongsToCollectionFIds = notBelongToCollectionsF.map(collection => collection.id);
       const discount = {
         title: form.discountTitle,
         method: form.discountMethod,
@@ -225,11 +236,16 @@ export default function VolumeNew() {
         configuration: {
           quantity: parseInt(form.configuration.quantity),
           percentage: parseFloat(form.configuration.percentage),          
-          selectedCollectionIds: belongsToCollectionIds.concat(notBelongsToCollectionIds),
-          belongsToCollectionIds,
-          notBelongsToCollectionIds,
-          belongToCollections,
-          notBelongToCollections,
+          selectedCollectionTIds: belongsToCollectionTIds.concat(notBelongsToCollectionTIds),
+          selectedCollectionFIds: belongsToCollectionFIds.concat(notBelongsToCollectionFIds),
+          belongsToCollectionTIds,
+          notBelongsToCollectionTIds,
+          belongToCollectionsT,
+          notBelongToCollectionsT,
+          belongsToCollectionFIds,
+          notBelongsToCollectionFIds,
+          belongToCollectionsF,
+          notBelongToCollectionsF,
           metafieldState: form.configuration.metafieldState, 
         },
       };
@@ -240,6 +256,35 @@ export default function VolumeNew() {
     },
   });
 
+  const [selected, setSelected] = useState<string[]>(['hidden']);
+  
+  const handleChoiceListChange = useCallback((value: string[]) => {
+    console.log("Val", value)
+    setSelected(value)
+  }, []); 
+
+  const renderChildren = useCallback((isSelected: boolean) => {
+      if(isSelected) {
+        if(selected[1] === 'true') {
+          return (
+            <Layout.Section>
+              <CollectionsPicker {...configuration.belongToCollectionsT} title="Apply to collections"/>
+              <CollectionsPicker {...configuration.notBelongToCollectionsT} title="Not Apply to collections"/>
+            </Layout.Section>
+          )
+        }
+        if(selected[2] === 'false') {
+          return (
+            <Layout.Section>
+              <CollectionsPicker {...configuration.belongToCollectionsF} title="Apply to collections"/>
+              <CollectionsPicker {...configuration.notBelongToCollectionsF} title="Not Apply to collections"/>
+            </Layout.Section>
+          )
+        }
+        return null
+      }      
+  }, [{...configuration.belongToCollectionsT}, {...configuration.belongToCollectionsF}, {...configuration.notBelongToCollectionsT}, {...configuration.notBelongToCollectionsF}]);
+  
   const errorBanner =
     submitErrors.length > 0 ? (
       <Layout.Section>
@@ -294,10 +339,25 @@ export default function VolumeNew() {
                     autoComplete="on"
                     {...configuration.percentage}
                     suffix="%"
-                  />                            
-                  <CollectionsPicker {...configuration.belongToCollections} title="Apply to collections"/>
-                  <CollectionsPicker {...configuration.notBelongToCollections} title="Not Apply to collections"/>
-                  <CustomCheckbox {...configuration.metafieldState} />                  
+                  />
+                  <ChoiceList
+                  allowMultiple
+                    title="TWC SALE Metafield usage"
+                    choices={[
+                      {
+                        label: 'True', 
+                        value: 'true',
+                        renderChildren,
+                      },                                              
+                      {
+                        label: 'False',
+                        value: 'false',
+                        renderChildren,
+                      },
+                    ]}
+                    selected={selected}
+                    onChange={handleChoiceListChange}
+                  />             
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
