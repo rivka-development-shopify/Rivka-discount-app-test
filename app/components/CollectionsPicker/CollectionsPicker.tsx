@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ResourcePicker } from '@shopify/app-bridge-react';
-import { Page, Layout, Card, Text, Button, ResourceList, Avatar, Thumbnail, ResourceItem, LegacyStack } from '@shopify/polaris';
+import { Page, Layout, Card, Text, Button, ResourceList, Avatar, Thumbnail, ResourceItem, LegacyStack, ChoiceList } from '@shopify/polaris';
 
 export function CollectionsPicker(props) {
   const [isOpen, setIsOpen] = useState(false); 
@@ -19,7 +19,36 @@ export function CollectionsPicker(props) {
     setIsOpen(false);
   };
 
-  return (
+  const [selected, setSelected] = useState<string[]>(['hidden']);
+  
+  const handleChoiceListChange = useCallback((value: string[]) => {
+    console.log("Val", value)
+    setSelected(value)
+  }, []); 
+
+  const renderChildren = useCallback((isSelected: boolean) => {
+      if(isSelected) {
+        if(selected[1] === 'true') {
+          return (
+            <Layout.Section>
+              <CollectionsPicker {...props.belongToCollectionsT} title="Apply to collections"/>
+              <CollectionsPicker {...props.notBelongToCollectionsT} title="Not Apply to collections"/>
+            </Layout.Section>
+          )
+        }
+        if(selected[2] === 'false') {
+          return (
+            <Layout.Section>
+              <CollectionsPicker {...props.belongToCollectionsF} title="Apply to collections"/>
+              <CollectionsPicker {...props.notBelongToCollectionsF} title="Not Apply to collections"/>
+            </Layout.Section>
+          )
+        }
+        return null
+      }      
+  }, [{...props.belongToCollectionsT}, {...props.belongToCollectionsF}, {...props.notBelongToCollectionsT}, {...props.notBelongToCollectionsF}]);
+  console.log('first', props)
+  return  (
     <div>
       <LegacyStack vertical={true}>
         <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
@@ -30,11 +59,11 @@ export function CollectionsPicker(props) {
           <Button size="micro" onClick={() => {handleOpenPicker()}}>Add Collections</Button>
         </div>
         {
-          props.value.length >= 1 &&
+          props.belongToCollectionsT.value.length >= 1 &&
           
           <ResourceList
             resourceName={{singular: 'collection', plural: 'collections'}}
-            items={props.value}
+            items={props.belongToCollectionsT.value}
             showHeader={false}
     
             renderItem={(collection) => {
@@ -61,6 +90,24 @@ export function CollectionsPicker(props) {
                     <Text variant="bodyMd" fontWeight="bold" as="h3">
                       {collection.title}
                     </Text>
+                    <ChoiceList
+                      allowMultiple
+                      title="TWC SALE Metafield usage"
+                      choices={[
+                        {
+                          label: 'True', 
+                          value: 'true',
+                          renderChildren,
+                        },                                              
+                        {
+                          label: 'False',
+                          value: 'false',
+                          renderChildren,
+                        },
+                      ]}
+                      selected={selected}
+                      onChange={handleChoiceListChange}
+                    />
                   </LegacyStack>
                 </ResourceItem>
               );
@@ -78,7 +125,7 @@ export function CollectionsPicker(props) {
       <ResourcePicker
         resourceType="Collection"
         open={isOpen}
-        initialSelectionIds={props.value} // Set initial selection
+        initialSelectionIds={props.belongToCollectionsT.value} // Set initial selection
         onSelection={(resources) => handleSelection(resources.selection)}
         onCancel={handleCancelPicker}
       />

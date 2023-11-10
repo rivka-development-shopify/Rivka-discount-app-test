@@ -254,36 +254,7 @@ export default function VolumeNew() {
 
       return { status: "success" };
     },
-  });
-
-  const [selected, setSelected] = useState<string[]>(['hidden']);
-  
-  const handleChoiceListChange = useCallback((value: string[]) => {
-    console.log("Val", value)
-    setSelected(value)
-  }, []); 
-
-  const renderChildren = useCallback((isSelected: boolean) => {
-      if(isSelected) {
-        if(selected[1] === 'true') {
-          return (
-            <Layout.Section>
-              <CollectionsPicker {...configuration.belongToCollectionsT} title="Apply to collections"/>
-              <CollectionsPicker {...configuration.notBelongToCollectionsT} title="Not Apply to collections"/>
-            </Layout.Section>
-          )
-        }
-        if(selected[2] === 'false') {
-          return (
-            <Layout.Section>
-              <CollectionsPicker {...configuration.belongToCollectionsF} title="Apply to collections"/>
-              <CollectionsPicker {...configuration.notBelongToCollectionsF} title="Not Apply to collections"/>
-            </Layout.Section>
-          )
-        }
-        return null
-      }      
-  }, [{...configuration.belongToCollectionsT}, {...configuration.belongToCollectionsF}, {...configuration.notBelongToCollectionsT}, {...configuration.notBelongToCollectionsF}]);
+  });  
   
   const errorBanner =
     submitErrors.length > 0 ? (
@@ -340,24 +311,7 @@ export default function VolumeNew() {
                     {...configuration.percentage}
                     suffix="%"
                   />
-                  <ChoiceList
-                  allowMultiple
-                    title="TWC SALE Metafield usage"
-                    choices={[
-                      {
-                        label: 'True', 
-                        value: 'true',
-                        renderChildren,
-                      },                                              
-                      {
-                        label: 'False',
-                        value: 'false',
-                        renderChildren,
-                      },
-                    ]}
-                    selected={selected}
-                    onChange={handleChoiceListChange}
-                  />             
+                  <CollectionsPicker {...configuration} />                               
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
