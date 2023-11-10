@@ -2550,7 +2550,10 @@ type Customer implements HasMetafields {
   numberOfOrders: Int!
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> wr/sku-discount
 scalar JSON
 
 
@@ -4184,4 +4187,8 @@ enum WeightUnit {
   1 pound equals 16 ounces.
   """
   POUNDS
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> wr/sku-discount
