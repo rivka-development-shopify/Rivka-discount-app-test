@@ -5,6 +5,9 @@ import prisma from "../db.server";
 
 import { cors } from 'remix-utils/cors';
 
+const getStackDiscountId = (stackDiscount) => {
+  return stackDiscount.replace('gid://shopify/DiscountCodeNode/', '')
+}
 
 export const action = async ({ request }) => {
 
@@ -36,21 +39,183 @@ export const action = async ({ request }) => {
         }
       }
 
-      // return json(UI_discountCode, {status: 200})
-      const getStackDiscountId = (stackDiscount) => {
-        return stackDiscount.replace('gid://shopify/DiscountCodeNode/', '')
-      }
 
-      UI_discountCode.stackDiscountsIds = UI_discountCode.stackDiscounts.map(stackDiscount => getStackDiscountId(stackDiscount))
+      const stackedPriceRules = await Promise.all(
+        UI_discountCode.stackDiscounts.map(async (UI_discountId) => {
+          try {
+            const graphqlDiscountFormData = await admin.graphql(`
+                query GetDiscount {
+                  discountNode(id: "${UI_discountId}") {
+                    id
+                    configurationField: metafield(
+                      namespace: "$app:sku-discount"
+                      key: "function-configuration"
+                    ) {
+                      id
+                      value
+                    }
+                    discount {
+                      __typename
+                      ... on DiscountCodeApp {
+                        title
+                        combinesWith {
+                          orderDiscounts
+                          productDiscounts
+                          shippingDiscounts
+                        }
+                        startsAt
+                        endsAt
+                        usageLimit
+                        appliesOncePerCustomer
+                        codes(first: 1) {
+                          nodes {
+                            code
+                          }
+                        }
+                      }
+                      ... on DiscountCodeBasic {
+                        title
+                        status
+                        combinesWith {
+                          orderDiscounts
+                          productDiscounts
+                          shippingDiscounts
+                        }
+                        startsAt
+                        endsAt
+                        usageLimit
+                        appliesOncePerCustomer
+                        codes(first: 1) {
+                          nodes {
+                            code
+                          }
+                        }
+                        customerGets {
+                          items {
+                            ... on AllDiscountItems {
+                              __typename
+                              allItems
+                            }
+                            ... on DiscountProducts {
+                              __typename
+                              productVariants(first: 100) {
+                                nodes {
+                                  id
+                                }
+                              }
+                            }
+                            ... on DiscountCollections {
+                              __typename
+                              collections(first: 100) {
+                                nodes {
+                                  id
+                                }
+                              }
+                            }
+                          }
+                          value {
+                            ... on DiscountPercentage {
+                              __typename
+                              percentage
+                            }
+                            ... on DiscountOnQuantity {
+                              __typename
+                              effect {
+                                ... on DiscountPercentage {
+                                  __typename
+                                  percentage
+                                }
+                              }
+                              quantity {
+                                quantity
+                              }
+                            }
+                            ... on DiscountAmount {
+                              __typename
+                              amount {
+                                amount
+                                currencyCode
+                              }
+                              appliesOnEachItem
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+            `)
+            const { data: { discountNode: grahqlDiscountNode } } = await graphqlDiscountFormData.json()
 
+            let discountNode = {};
+            let discountNodeConfiguration = {};
 
-      const graphqlPriceRulesFormData = await admin.rest.resources.DiscountCode.all({
-        session: adminSession,
-      })
+            switch(grahqlDiscountNode.discount.__typename) {
+              case 'DiscountCodeApp':
+                discountNodeConfiguration = JSON.parse(grahqlDiscountNode.configurationField.value)
+                discountNode = {
+                  type: 'App',
+                  title: grahqlDiscountNode.discount.title,
+                  code: grahqlDiscountNode.discount.codes.nodes.length > 0 ? grahqlDiscountNode.discount.codes.nodes[0].code : grahqlDiscountNode.discount.title,
+                  appliesOncePerCustomer: grahqlDiscountNode.discount.appliesOncePerCustomer,
+                  usageLimit: grahqlDiscountNode.discount.usageLimit,
+                  startsAt: grahqlDiscountNode.discount.startsAt,
+                  endsAt: grahqlDiscountNode.discount.endsAt,
+                  combinesWith: grahqlDiscountNode.discount.combinesWith,
 
-      const { data: priceRules } = graphqlPriceRulesFormData
+                  percentage: discountNodeConfiguration.percentage / 100.0,
+                  minQuantity: discountNodeConfiguration.quantity === 0 ? null : discountNodeConfiguration.quantity,
+                  collectionsToApply: discountNodeConfiguration.belongsToCollectionIds,
+                  collectionsToIgnore: discountNodeConfiguration.notBelongsToCollectionIds,
+                  productVariantsToApply: [],
+                  productVariantsToIgnore: [],
+                }
+              break;
+              case 'DiscountCodeBasic':
+                discountNodeConfiguration = {
+                  percentage: grahqlDiscountNode.discount.customerGets.value.percentage,
+                  collectionsToApply: [],
+                  productVariantsToApply: []
+                }
+                switch(grahqlDiscountNode.discount.customerGets.items.__typename) {
+                  case 'DiscountCollections':
+                    discountNodeConfiguration.collectionsToApply = grahqlDiscountNode.discount.customerGets.items.collections.nodes.map(collection => collection.id)
+                  break;
+                  case 'DiscountProducts':
+                    discountNodeConfiguration.productVariantsToApply = grahqlDiscountNode.discount.customerGets.items.productVariants.nodes.map(variant => variant.id)
+                  break;
+                }
 
-      const stackedPriceRules = priceRules
+                discountNode = {
+                  type: 'Product Percentage',
+                  title: grahqlDiscountNode.discount.title,
+                  code: grahqlDiscountNode.discount.codes.nodes.length > 0 ? grahqlDiscountNode.discount.codes.nodes[0].code : grahqlDiscountNode.discount.title,
+                  appliesOncePerCustomer: grahqlDiscountNode.discount.appliesOncePerCustomer,
+                  usageLimit: grahqlDiscountNode.discount.usageLimit,
+                  startsAt: grahqlDiscountNode.discount.startsAt,
+                  endsAt: grahqlDiscountNode.discount.endsAt,
+                  combinesWith: grahqlDiscountNode.discount.combinesWith,
+
+                  minQuantity: null,
+                  percentage: discountNodeConfiguration.percentage,
+                  collectionsToIgnore: [],
+                  collectionsToApply: discountNodeConfiguration.collectionsToApply,
+                  productVariantsToApply: discountNodeConfiguration.productVariantsToApply,
+                  productVariantsToIgnore: [],
+                }
+              break;
+            }
+
+            return discountNode
+          } catch(e) {
+            console.error({
+              err: 'On storefront graphql discount code request',
+              msg: e
+            })
+            return null
+          }
+        })
+      )
 
 
       const productsDetails = await Promise.all(
