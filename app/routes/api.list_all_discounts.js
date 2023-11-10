@@ -10,8 +10,6 @@ export const action = async ({ request }) => {
 
   if(request.method === 'POST') {
     try {
-
-      // authenticate with public key => generate token?
       const body = await request.json()
       if(
         !body.addedCode || !body.cartProducts
@@ -46,11 +44,14 @@ export const action = async ({ request }) => {
       UI_discountCode.stackDiscountsIds = UI_discountCode.stackDiscounts.map(stackDiscount => getStackDiscountId(stackDiscount))
 
 
-      const priceRules = await admin.rest.resources.PriceRule.all({
+      const graphqlPriceRulesFormData = await admin.rest.resources.DiscountCode.all({
         session: adminSession,
       })
 
-      admin.rest.resouse
+      const { data: priceRules } = graphqlPriceRulesFormData
+
+      const stackedPriceRules = priceRules
+
 
       const productsDetails = await Promise.all(
         body.cartProducts.map(async ({productId, productVariantId}) => {
@@ -108,8 +109,7 @@ export const action = async ({ request }) => {
         {
           body: {
             data: {
-              productsDetails,
-              priceRules
+              stackedPriceRules
             }
           }
         },

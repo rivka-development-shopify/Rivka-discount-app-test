@@ -29,3 +29,8 @@ model DiscountCode {
   enabled               Boolean
   stackDiscounts        String[]
 }
+
+model PublicAuthKey {
+  id  String  @id @map("_id") @default(auto()) @db.ObjectId
+  key String  @unique
+}

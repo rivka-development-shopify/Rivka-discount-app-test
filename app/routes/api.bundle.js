@@ -3,21 +3,15 @@ import * as fs from 'fs';
 import UglifyJS from 'uglify-js';
 import { json } from "@remix-run/node";
 import path from 'path';
-
+import { getPublicAuthKeyByKey } from '../controllers/publicAuthKeysController'
 import JavaScriptObfuscator from 'javascript-obfuscator';
 
 const validateAuthKeyParam = (requestUrl) => {
 
-  //get it from the db?
-  const aceptedKeys = [
-    'test-public-key'
-  ]
-
-
   const params =  new URLSearchParams(
     new URL(requestUrl).searchParams
   )
-  return params.has('publicAuthKey') && aceptedKeys.includes(params.get('publicAuthKey'))
+  return getPublicAuthKeyByKey(params.get('publicAuthKey'))
 }
 
 // WILL THIS WORK IN PRODUCTION?

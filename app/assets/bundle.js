@@ -1,5 +1,5 @@
 // @ts-nocheck
-const API_URL = 'https://b73f-181-31-154-153.ngrok-free.app'
+const API_URL = 'https://a6d3-181-31-154-153.ngrok-free.app'
 const handleApplyDiscount = () => {
   data = {
     "addedCode":"231010",
