@@ -6,10 +6,13 @@ query RunInput($selectedCollectionIds: [ID!]) {
         __typename
         ... on ProductVariant {
           id
-          sku
           product {
             id
             inAnyCollection(ids: $selectedCollectionIds)
+            inCollections(ids: $selectedCollectionIds) {
+              collectionId
+              isMember
+            }
           }
           metafield(key: "sale_item", namespace: "twc") {
             type
