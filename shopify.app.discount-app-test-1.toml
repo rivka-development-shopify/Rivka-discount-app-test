@@ -1,0 +1,27 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "discount-app-test-1"
+client_id = "9a85ad5fab728b5a63060b94a3371abd"
+application_url = "https://point-dome-gentle-enemy.trycloudflare.com"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products,write_discounts"
+
+[auth]
+redirect_urls = [
+  "https://point-dome-gentle-enemy.trycloudflare.com/auth/callback",
+  "https://point-dome-gentle-enemy.trycloudflare.com/auth/shopify/callback",
+  "https://point-dome-gentle-enemy.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2023-10"
+
+[pos]
+embedded = false
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "rivka-extensibility-testing.myshopify.com"

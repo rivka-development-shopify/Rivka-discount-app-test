@@ -25,23 +25,27 @@ export function run(input) {
    * @type {{
   *   quantity: number
   *   percentage: number
-  *   sku: string
+  *   belongsToCollectionIds: string[],
+  *   notBelongsToCollectionIds: string[]
   * }}
   */
   const configuration = JSON.parse(
     input?.discountNode?.metafield?.value ?? "{}"
   );
-  if (!configuration.sku || !configuration.percentage) {
+  if (!configuration.percentage) {
     return EMPTY_DISCOUNT;
   }
+
+  const { belongsToCollectionIds, notBelongsToCollectionIds } = configuration;
   const targets = input.cart.lines
     .filter(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
-      if (!variant.product.inAnyCollection) {
-        return console.log('Some product(s) in your cart are not elegible for this discount')
-      } else {
-        return variant.metafield?.value == "true" && line.merchandise.__typename == "ProductVariant"
-      }
+      return variant.product.inCollections.map(({ collectionId, isMember }) => {
+          if (isMember) {
+              return belongsToCollectionIds.indexOf(collectionId) > -1
+          }
+          return notBelongsToCollectionIds.indexOf(collectionId) > -1
+      }).every((value) => value === true)
     })
     .map(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
