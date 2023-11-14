@@ -36,7 +36,7 @@ import {
 
 import shopify from "../shopify.server";
 import { NotFoundPage } from "../components/NotFoundPage";
-import { CollectionsPicker } from "~/components/CollectionsPicker";
+import CollectionsPicker from "~/components/CollectionsPicker";
 
 // This is a server-side action that is invoked when the form is submitted.
 // It makes an admin GraphQL request to update a discount.
@@ -299,14 +299,14 @@ export default function VolumeEdit() {
       configuration: {
         quantity: useField(discount.configuration.quantity),
         percentage: useField(discount.configuration.percentage),        
-        belongToCollections: useField(discount.configuration.belongToCollections),
-        notBelongToCollections: useField(discount.configuration.notBelongToCollections),
+        collectionsToApply: useField(discount.configuration.collectionsToApply),
+        collectionsToIgnore: useField(discount.configuration.collectionsToIgnore),
       },
     },
     onSubmit: async (form) => {      
-      const { belongToCollections, notBelongToCollections } = form.configuration;
-      const belongsToCollectionIds = belongToCollections.map(collection => collection.id);
-      const notBelongsToCollectionIds = notBelongToCollections.map(collection => collection.id);
+      const { collectionsToApply, collectionsToIgnore } = form.configuration;
+      const collectionsToApplyIds = collectionsToApply.map(collection => collection.id);
+      const collectionsToIgnoreIds = collectionsToIgnore.map(collection => collection.id);
       const discount = {
         title: form.discountTitle,
         method: form.discountMethod,
@@ -320,11 +320,11 @@ export default function VolumeEdit() {
           metafieldId,
           quantity: parseInt(form.configuration.quantity),
           percentage: parseFloat(form.configuration.percentage),
-          selectedCollectionIds: belongsToCollectionIds.concat(notBelongsToCollectionIds),
-          belongsToCollectionIds,
-          notBelongsToCollectionIds,
-          belongToCollections,
-          notBelongToCollections           
+          selectedCollectionIds: collectionsToApplyIds.concat(collectionsToIgnoreIds),
+          collectionsToApplyIds,
+          collectionsToIgnoreIds,
+          collectionsToApply,
+          collectionsToIgnore           
         },
       };
       console.log('Form', form.configuration)
@@ -333,7 +333,7 @@ export default function VolumeEdit() {
       return { status: "success" };
     },
   });
-
+  console.log({configuration})
   const errorBanner =
     submitErrors.length > 0 ? (
       <Layout.Section>
@@ -351,7 +351,7 @@ export default function VolumeEdit() {
         </Banner>
       </Layout.Section>
     ) : null;
-
+ 
   return (
     // Render a discount form using Polaris components and the discount app components
     <Page
@@ -389,8 +389,8 @@ export default function VolumeEdit() {
                     {...configuration.percentage}
                     suffix="%"
                   />
-                  <CollectionsPicker {...configuration.belongToCollections} title="Apply to collections"/>
-                  <CollectionsPicker {...configuration.notBelongToCollections} title="Not Apply to collections"/>
+                  <CollectionsPicker {...configuration.collectionsToApply} title="Collections to Apply"/>
+                  <CollectionsPicker {...configuration.collectionsToIgnore} title="Collections to Ignore"/>
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
