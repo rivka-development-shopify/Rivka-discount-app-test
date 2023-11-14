@@ -19,7 +19,7 @@ const getBundleMinFile = async () => {
   const cwd = process.cwd();
   const bundlePath = new URL(`${cwd}/app/assets/bundle.js`).pathname;
   const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
-  const bundle = rawBundle.replace('SHOPIFYAPPAPIPUBLICKEY', 'public-key')
+  const bundle = rawBundle
   const { code } = UglifyJS.minify(bundle)
   const bundleMin = JavaScriptObfuscator.obfuscate(
     code, {

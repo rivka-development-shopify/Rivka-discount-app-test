@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ResourcePicker } from '@shopify/app-bridge-react';
-import { Page, Layout, Card, Text, Button, ResourceList, Avatar, Thumbnail, ResourceItem, LegacyStack } from '@shopify/polaris';
+import { ChoiceList, Layout, Card, Text, Button, ResourceList, Avatar, Thumbnail, ResourceItem, LegacyStack } from '@shopify/polaris';
 
 export function CollectionsPicker(props) {
   const [isOpen, setIsOpen] = useState(false);
- 
-
+  const [selected, setSelected] = useState(['none']);
+  const [metafiledSelected, setMetafiledSelected] = useState(['hidden']);
   console.log(props)
   const handleSelection = (selection) => {
     console.log(selection)
@@ -21,6 +21,33 @@ export function CollectionsPicker(props) {
     setIsOpen(false);
   };
 
+  const renderChildren = useCallback(
+    (isSelected) =>
+      isSelected && (
+        <ChoiceList
+          titleHidden={true}
+          allowMultiple
+          choices={[
+            {
+              label: 'True',
+              value: 'true',
+            },
+            {
+              label: 'False',
+              value: 'false',
+            },
+            {
+              label: 'Unset',
+              value: 'null',
+            },
+          ]}
+          selected={metafiledSelected}
+          onChange={(value) => setMetafiledSelected(value)}
+        />
+      ),
+    [setMetafiledSelected, metafiledSelected],
+  );
+
   return (
     <div>
       <LegacyStack vertical={true}>
@@ -33,12 +60,12 @@ export function CollectionsPicker(props) {
         </div>
         {
           props.value.length >= 1 &&
-          
+
           <ResourceList
             resourceName={{singular: 'collection', plural: 'collections'}}
             items={props.value}
             showHeader={false}
-    
+
             renderItem={(collection) => {
               const titleSplit = collection.title.split(' ')
               let initials = ''
@@ -48,21 +75,34 @@ export function CollectionsPicker(props) {
                 initials = collection.title.charAt(0) + collection.title.charAt(1)
               }
               initials = initials.toUpperCase()
-    
+
               let media = <Avatar shape='square' size='small' initials={initials} name={collection.title} />;
               if(collection.image) {
                 media = <Thumbnail size="small" source={collection.image.originalSrc} alt={collection.image.altText}/>;
               }
-    
+
               return (
                 <ResourceItem
                   id={collection.id}
-                  media={media}
                 >
-                  <LegacyStack vertical={true} alignment='baseline'>
+                  <LegacyStack vertical={false} alignment='center'>
+                    {media}
                     <Text variant="bodyMd" fontWeight="bold" as="h3">
                       {collection.title}
                     </Text>
+                    <ChoiceList
+                        titleHidden={true}
+                        allowMultiple
+                        choices={[
+                          {
+                            label: 'Use Metafield',
+                            value: 'true',
+                            renderChildren,
+                          },
+                        ]}
+                        selected={selected}
+                        onChange={(value) => setSelected(value)}
+                      />
                   </LegacyStack>
                 </ResourceItem>
               );
@@ -74,7 +114,7 @@ export function CollectionsPicker(props) {
                   </Text>
                 </Card>
               )}
-          />        
+          />
         }
       </LegacyStack>
       <ResourcePicker
