@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { json } from "@remix-run/node";
 import { useForm, useField } from "@shopify/react-form";
-import { useAppBridge, ResourcePicker } from "@shopify/app-bridge-react";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
 import { CurrencyCode } from "@shopify/react-i18n";
 import {
@@ -30,17 +30,12 @@ import {
   Page,
   PageActions,
   TextField,
-  VerticalStack,
-  Button,
-  LegacyCard,
-  ResourceList,
-  Avatar,
-  ResourceItem,
+  VerticalStack
+  
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
-
-import { CollectionsPicker } from "../components/CollectionsPicker";
+import CollectionsPicker from "~/components/CollectionsPicker";
 
 // This is a server-side action that is invoked when the form is submitted.
 // It makes an admin GraphQL request to create a discount.
@@ -106,6 +101,7 @@ export const action = async ({ params, request }) => {
     );
 
     const responseJson = await response.json();
+    console.log("repsonse", responseJson)
     const errors = responseJson.data.discountCreate?.userErrors;
     return json({ errors });
   } else {
@@ -139,7 +135,7 @@ export const action = async ({ params, request }) => {
 
     const responseJson = await response.json();
     const errors = responseJson.data.discountCreate?.userErrors;
-    console.log(responseJson)
+    console.log("repsonse", responseJson)
     return json({ errors });
   }
 };
@@ -202,14 +198,18 @@ export default function VolumeNew() {
       configuration: {
         quantity: useField("0"),
         percentage: useField("0"),
-        belongToCollections: useField([]),
-        notBelongToCollections: useField([]),
+        collectionsToApply: useField([]),
+        collectionsToIgnore: useField([]),                        
+        metafieldState: useField(false)
       },
     },
     onSubmit: async (form) => {
-      const { belongToCollections, notBelongToCollections } = form.configuration;
-      const belongsToCollectionIds = belongToCollections.map(collection => collection.id);
-      const notBelongsToCollectionIds = notBelongToCollections.map(collection => collection.id);
+      const { 
+        collectionsToApply, 
+        collectionsToIgnore,        
+       } = form.configuration;
+      const collectionsToApplyIds = collectionsToApply.map(collection => collection.id);
+      const collectionsToIgnoreIds = collectionsToIgnore.map(collection => collection.id);      
       const discount = {
         title: form.discountTitle,
         method: form.discountMethod,
@@ -222,9 +222,12 @@ export default function VolumeNew() {
         configuration: {
           quantity: parseInt(form.configuration.quantity),
           percentage: parseFloat(form.configuration.percentage),          
-          selectedCollectionIds: belongsToCollectionIds.concat(notBelongsToCollectionIds),
-          belongsToCollectionIds,
-          notBelongsToCollectionIds, 
+          selectedCollectionIds: collectionsToApplyIds.concat(collectionsToIgnoreIds),          
+          collectionsToApplyIds,
+          collectionsToIgnoreIds,
+          collectionsToApply,
+          collectionsToIgnore,
+          metafieldState: form.configuration.metafieldState, 
         },
       };
 
@@ -232,8 +235,8 @@ export default function VolumeNew() {
 
       return { status: "success" };
     },
-  });
-
+  });  
+  
   const errorBanner =
     submitErrors.length > 0 ? (
       <Layout.Section>
@@ -251,7 +254,7 @@ export default function VolumeNew() {
         </Banner>
       </Layout.Section>
     ) : null;
-
+  
   return (
     // Render a discount form using Polaris components and the discount app components
     <Page
@@ -288,9 +291,9 @@ export default function VolumeNew() {
                     autoComplete="on"
                     {...configuration.percentage}
                     suffix="%"
-                  />                            
-                  <CollectionsPicker {...configuration.belongToCollections} title="Apply to collections"/>
-                  <CollectionsPicker {...configuration.notBelongToCollections} title="Not Apply to collections"/>
+                  />
+                  <CollectionsPicker {...configuration.collectionsToApply} title="Collections to Apply" />                                              
+                  <CollectionsPicker {...configuration.collectionsToIgnore} title="Collections to Ignore" />                                              
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
@@ -363,3 +366,16 @@ export default function VolumeNew() {
     </Page>
   );
 }
+
+[
+  {
+    apareceEn: 'sale'
+  },
+  {
+    noPareceEn: 'sale',
+    metafield: {
+      name: 'whatever',
+      value: 'true'
+    }
+  }
+]

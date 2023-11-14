@@ -25,8 +25,8 @@ export function run(input) {
    * @type {{
   *   quantity: number
   *   percentage: number
-  *   belongsToCollectionIds: string[],
-  *   notBelongsToCollectionIds: string[]
+  *   collectionsToApplyIds: string[],
+  *   collectionsToIgnoreIds: string[]
   * }}
   */
   const configuration = JSON.parse(
@@ -36,16 +36,44 @@ export function run(input) {
     return EMPTY_DISCOUNT;
   }
 
-  const { belongsToCollectionIds, notBelongsToCollectionIds } = configuration;
-  const targets = input.cart.lines
-    .filter(line => {
+  const { collectionsToApplyIds, collectionsToIgnoreIds } = configuration;
+
+  const validateDiscount = (lines) => {
+    return lines.filter(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
-      return variant.product.inCollections.map(({ collectionId, isMember }) => {
-          if (isMember) {
-              return belongsToCollectionIds.indexOf(collectionId) > -1
-          }
-          return notBelongsToCollectionIds.indexOf(collectionId) > -1
-      }).every((value) => value === true)
+      if(collectionsToApplyIds.length >= 1 && collectionsToIgnoreIds.length >= 1) {
+        if(variant.metafield?.value === 'false') {
+          return variant.product.inCollections.map(({ collectionId, isMember }) => {
+              if (isMember) {
+                  return collectionsToApplyIds.indexOf(collectionId) > -1
+              }
+              return collectionsToIgnoreIds.indexOf(collectionId) > -1
+          }).every((value) => value === true)
+        }
+      }
+      if(collectionsToApplyIds.length == 0 && collectionsToIgnoreIds.length >= 1) {
+        if(variant.metafield?.value === 'false') {
+          return variant.product.inCollections.map(({ collectionId, isMember }) => {
+              if (!isMember) {
+                  return collectionsToIgnoreIds.indexOf(collectionId) > -1
+              }
+          }).every((value) => value === true)
+        }
+        if(variant.metafield?.value === 'true') {
+          return variant.product.inCollections.map(({ collectionId, isMember }) => {
+              if (!isMember) {
+                  return collectionsToIgnoreIds.indexOf(collectionId) > -1
+              }
+          }).every((value) => value === true)
+        }
+      }
+      if(collectionsToApplyIds.length >= 1 && collectionsToIgnoreIds.length == 0) {
+        return variant.product.inCollections.map(({ collectionId, isMember }) => {
+            if (isMember) {
+                return collectionsToApplyIds.indexOf(collectionId) > -1
+            }
+        }).every((value) => value === true)
+      }
     })
     .map(line => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
@@ -55,9 +83,11 @@ export function run(input) {
         }
       });
     });
+  }
+
+  const targets = validateDiscount(input.cart.lines);
 
   if (!targets.length) {
-    console.error("No cart lines qualify for volume discount.");
     return EMPTY_DISCOUNT;
   }
 

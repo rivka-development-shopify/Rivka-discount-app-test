@@ -1,1 +1,0 @@
-export { CollectionsPicker } from "./CollectionsPicker";
