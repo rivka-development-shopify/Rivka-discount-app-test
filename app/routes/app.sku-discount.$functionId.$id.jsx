@@ -32,6 +32,7 @@ import {
   PageActions,
   TextField,
   VerticalStack,
+  Button,
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
@@ -92,6 +93,7 @@ export const action = async ({ params, request }) => {
             metafields: [
               {
                 id: configuration.metafieldId,
+                type: "json",
                 value: JSON.stringify(configuration),
               },
             ],
@@ -101,6 +103,7 @@ export const action = async ({ params, request }) => {
     );
 
     const responseJson = await response.json();
+
     const errors = responseJson.data.discountUpdate?.userErrors;
     return json({ errors });
   } else {
@@ -123,6 +126,7 @@ export const action = async ({ params, request }) => {
             metafields: [
               {
                 id: configuration.metafieldId,
+                type: "json",
                 value: JSON.stringify(configuration),
               },
             ],
@@ -254,7 +258,7 @@ export default function VolumeEdit() {
   const redirect = Redirect.create(app);
 
   useEffect(() => {
-    
+
     if (actionData?.errors.length === 0) {
       redirect.dispatch(Redirect.Action.ADMIN_SECTION, {
         name: Redirect.ResourceType.Discount,
@@ -264,7 +268,7 @@ export default function VolumeEdit() {
 
   if (!discount) {
     return <NotFoundPage />;
-  } 
+  }
 
   const { metafieldId } = discount.configuration;
   const {
@@ -298,12 +302,12 @@ export default function VolumeEdit() {
       endDate: useField(discount.endsAt),
       configuration: {
         quantity: useField(discount.configuration.quantity),
-        percentage: useField(discount.configuration.percentage),        
+        percentage: useField(discount.configuration.percentage),
         collectionsToApply: useField(discount.configuration.collectionsToApply),
         collectionsToIgnore: useField(discount.configuration.collectionsToIgnore),
       },
     },
-    onSubmit: async (form) => {      
+    onSubmit: async (form) => {
       const { collectionsToApply, collectionsToIgnore } = form.configuration;
       const collectionsToApplyIds = collectionsToApply.map(collection => collection.id);
       const collectionsToIgnoreIds = collectionsToIgnore.map(collection => collection.id);
@@ -321,10 +325,10 @@ export default function VolumeEdit() {
           quantity: parseInt(form.configuration.quantity),
           percentage: parseFloat(form.configuration.percentage),
           selectedCollectionIds: collectionsToApplyIds.concat(collectionsToIgnoreIds),
-          collectionsToApplyIds,
-          collectionsToIgnoreIds,
-          collectionsToApply,
-          collectionsToIgnore           
+          collectionsToApplyIds: collectionsToApplyIds,
+          collectionsToIgnoreIds: collectionsToIgnoreIds,
+          collectionsToApply: collectionsToApply,
+          collectionsToIgnore: collectionsToIgnore
         },
       };
       console.log('Form', form.configuration)
@@ -333,7 +337,8 @@ export default function VolumeEdit() {
       return { status: "success" };
     },
   });
-  console.log({configuration})
+
+
   const errorBanner =
     submitErrors.length > 0 ? (
       <Layout.Section>
@@ -351,7 +356,7 @@ export default function VolumeEdit() {
         </Banner>
       </Layout.Section>
     ) : null;
- 
+
   return (
     // Render a discount form using Polaris components and the discount app components
     <Page
@@ -382,7 +387,7 @@ export default function VolumeEdit() {
                 <VerticalStack gap="3">
                   <Text variant="headingMd" as="h2">
                     Custom Discount
-                  </Text>                  
+                  </Text>
                   <TextField
                     label="Discount percentage"
                     autoComplete="on"

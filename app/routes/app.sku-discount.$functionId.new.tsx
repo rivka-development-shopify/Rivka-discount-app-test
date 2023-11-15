@@ -31,7 +31,7 @@ import {
   PageActions,
   TextField,
   VerticalStack
-  
+
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
@@ -72,6 +72,7 @@ export const action = async ({ params, request }) => {
       appliesOncePerCustomer,
     };
 
+
     const response = await admin.graphql(
       `#graphql
           mutation CreateCodeDiscount($discount: DiscountCodeAppInput!) {
@@ -101,7 +102,6 @@ export const action = async ({ params, request }) => {
     );
 
     const responseJson = await response.json();
-    console.log("repsonse", responseJson)
     const errors = responseJson.data.discountCreate?.userErrors;
     return json({ errors });
   } else {
@@ -135,7 +135,6 @@ export const action = async ({ params, request }) => {
 
     const responseJson = await response.json();
     const errors = responseJson.data.discountCreate?.userErrors;
-    console.log("repsonse", responseJson)
     return json({ errors });
   }
 };
@@ -152,9 +151,9 @@ export default function VolumeNew() {
   const currencyCode = CurrencyCode.Cad;
   const submitErrors = actionData?.errors || [];
   const redirect = Redirect.create(app);
-  
 
-  useEffect(() => {    
+
+  useEffect(() => {
     if (actionData?.errors.length === 0) {
       redirect.dispatch(Redirect.Action.ADMIN_SECTION, {
         name: Redirect.ResourceType.Discount,
@@ -199,17 +198,14 @@ export default function VolumeNew() {
         quantity: useField("0"),
         percentage: useField("0"),
         collectionsToApply: useField([]),
-        collectionsToIgnore: useField([]),                        
+        collectionsToIgnore: useField([]),
         metafieldState: useField(false)
       },
     },
     onSubmit: async (form) => {
-      const { 
-        collectionsToApply, 
-        collectionsToIgnore,        
-       } = form.configuration;
+      const { collectionsToApply, collectionsToIgnore } = form.configuration;
       const collectionsToApplyIds = collectionsToApply.map(collection => collection.id);
-      const collectionsToIgnoreIds = collectionsToIgnore.map(collection => collection.id);      
+      const collectionsToIgnoreIds = collectionsToIgnore.map(collection => collection.id);
       const discount = {
         title: form.discountTitle,
         method: form.discountMethod,
@@ -221,13 +217,13 @@ export default function VolumeNew() {
         endsAt: form.endDate,
         configuration: {
           quantity: parseInt(form.configuration.quantity),
-          percentage: parseFloat(form.configuration.percentage),          
-          selectedCollectionIds: collectionsToApplyIds.concat(collectionsToIgnoreIds),          
-          collectionsToApplyIds,
-          collectionsToIgnoreIds,
-          collectionsToApply,
-          collectionsToIgnore,
-          metafieldState: form.configuration.metafieldState, 
+          percentage: parseFloat(form.configuration.percentage),
+          selectedCollectionIds: collectionsToApplyIds.concat(collectionsToIgnoreIds),
+          collectionsToApplyIds: collectionsToApplyIds,
+          collectionsToIgnoreIds: collectionsToIgnoreIds,
+          collectionsToApply: collectionsToApply,
+          collectionsToIgnore: collectionsToIgnore,
+          metafieldState: form.configuration.metafieldState,
         },
       };
 
@@ -235,8 +231,8 @@ export default function VolumeNew() {
 
       return { status: "success" };
     },
-  });  
-  
+  });
+
   const errorBanner =
     submitErrors.length > 0 ? (
       <Layout.Section>
@@ -254,7 +250,7 @@ export default function VolumeNew() {
         </Banner>
       </Layout.Section>
     ) : null;
-  
+
   return (
     // Render a discount form using Polaris components and the discount app components
     <Page
@@ -285,15 +281,15 @@ export default function VolumeNew() {
                 <VerticalStack gap="3">
                   <Text variant="headingMd" as="h2">
                     Custom Discount
-                  </Text>                                                     
+                  </Text>
                   <TextField
                     label="Discount percentage"
                     autoComplete="on"
                     {...configuration.percentage}
                     suffix="%"
                   />
-                  <CollectionsPicker {...configuration.collectionsToApply} title="Collections to Apply" />                                              
-                  <CollectionsPicker {...configuration.collectionsToIgnore} title="Collections to Ignore" />                                              
+                  <CollectionsPicker {...configuration.collectionsToApply} title="Collections to Apply" />
+                  <CollectionsPicker {...configuration.collectionsToIgnore} title="Collections to Ignore" />
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
@@ -366,16 +362,3 @@ export default function VolumeNew() {
     </Page>
   );
 }
-
-[
-  {
-    apareceEn: 'sale'
-  },
-  {
-    noPareceEn: 'sale',
-    metafield: {
-      name: 'whatever',
-      value: 'true'
-    }
-  }
-]

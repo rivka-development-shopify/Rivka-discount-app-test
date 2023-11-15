@@ -124,6 +124,7 @@ const getDiscountsRulesByIds = async (stackDiscounts) => {
         let discountNode = {};
         let discountNodeConfiguration = {};
 
+
         switch(grahqlDiscountNode.discount.__typename) {
           case 'DiscountCodeApp':
             discountNodeConfiguration = JSON.parse(grahqlDiscountNode.configurationField.value)
@@ -139,8 +140,8 @@ const getDiscountsRulesByIds = async (stackDiscounts) => {
 
               percentage: discountNodeConfiguration.percentage / 100.0,
               minQuantity: discountNodeConfiguration.quantity === 0 ? null : discountNodeConfiguration.quantity,
-              collectionsToApply: discountNodeConfiguration.belongsToCollectionIds,
-              collectionsToIgnore: discountNodeConfiguration.notBelongsToCollectionIds,
+              collectionsToApply: discountNodeConfiguration.collectionsToApply,
+              collectionsToIgnore: discountNodeConfiguration.collectionsToIgnore,
               productVariantsToApply: [],
               productVariantsToIgnore: [],
             }
@@ -235,7 +236,7 @@ const getProductsDetails = async (products) => {
           collections: grahqlProduct.collections.edges.map(({node}) => node.id),
           variant: grahqlProduct.variants.edges.map(({node}) => ({
             id: node.id,
-            metafield_twc_sale_item: node.metafield?.value || null,
+            metafield_twc_sale_item: node.metafield?.value ?? null,
             price: node.price
           })).find(variant => variant.id === productVariantId)
         }
@@ -252,11 +253,37 @@ const getProductsDetails = async (products) => {
 
 const checkIfProductBelongsToPriceRule = (productDetails, priceRule) => {
   const collectionsToApply  = priceRule.collectionsToApply.filter(
-    collection => productDetails.collections.includes(collection)
+    collection => {
+      let isAplicable = true
+      if(productDetails.collections.includes(collection.id)) {
+        console.log('includes')
+        if(collection.useMetafield) {
+          if(`${productDetails.variant.metafield_twc_sale_item === 'true'?true:false}` !== `${collection.metafiledValue}`) {
+            console.log('metafield = true')
+            isAplicable = false
+          }
+        }
+      } else {
+        isAplicable = false
+      }
+      return isAplicable
+    }
   ).length > 0
 
   const collectionsToIgnore =  priceRule.collectionsToIgnore.filter(
-    collection => productDetails.collections.includes(collection)
+    collection => {
+      let isAplicable = true
+      if(productDetails.collections.includes(collection.id)) {
+        if(collection.useMetafield) {
+          if(`${productDetails.variant.metafield_twc_sale_item === 'true'?true:false}` !== `${collection.metafiledValue}`) {
+            isAplicable = false
+          }
+        }
+      } else {
+        isAplicable = false
+      }
+      return isAplicable
+    }
   ).length > 0
 
   const productVariantsToApply =  priceRule.productVariantsToApply.includes(productDetails.variant.id)
@@ -309,6 +336,10 @@ export const action = async ({ request }) => {
               )
             }
           )
+
+          console.log('DOUGLASSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS')
+          console.log(discountsApplied)
+          console.log('END DOUGLASSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS')
 
 
           const percentage = discountsApplied.reduce(
