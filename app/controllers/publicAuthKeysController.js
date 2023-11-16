@@ -1,5 +1,5 @@
 import prisma from "~/db.server";
-// import { Product } from "@prisma/client";
+import { randomKey } from '../utils/random'
 /**
  *
  * THIS HERE WILL MAKE THE DB CONNECTIONS AND WE WILL REQUEST TO THE GRAPHQL API TO THE SHOPIFY FUNCTIONS
@@ -36,7 +36,7 @@ export async function createPublicAuthKey(authKey) {
 
     return await prisma.publicAuthKey.create({
       data: {
-        key: Array.from({length: 32}).map(() => (Math.random() + 1).toString(36).substring(7).charAt(1)).join('')
+        key: randomKey(32)
       }
     })
   } catch (e) {
