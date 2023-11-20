@@ -16,22 +16,22 @@ export default function CollectionsPicker (props) {
   const [isOpen, setIsOpen] = useState(false);  
   const [selection, setSelection] = useState(props.value);   
 
-  const handleSelection = (modalSelection) => {
-       
-    const currentSelectionObject = selection.reduce((collections, collection) => {
-        return {
-            ...collections,
-            [collection.id]: collection
-        }
-    }, {})
+  const handleSelection = (modalSelection) => {       
+    const updatedSelection = selection.filter((selectedCollection) =>
+      modalSelection.find((modalCollection) => modalCollection.id === selectedCollection.id)
+    );
 
+    // Add new selections from modalSelection
+    modalSelection.forEach((modalCollection) => {
+      if (!updatedSelection.find((selectedCollection) => selectedCollection.id === modalCollection.id)) {
+        updatedSelection.push(modalCollection);
+      }
+    });
 
-    const selectionResult =  modalSelection.filter((collection) => {
-        return !currentSelectionObject[collection.id]
-    }).concat(selection);  
-    setSelection(selectionResult);
+    setSelection(updatedSelection);
     setIsOpen(false);
-    props.onChange(selectionResult);    
+    props.onChange(updatedSelection);
+    console.log({modalSelection, selection})    
   };
 
   const handleOpenPicker = () => setIsOpen(true);
@@ -53,8 +53,7 @@ export default function CollectionsPicker (props) {
       return prevSelection
     })
     props.onChange(selection)    
-  }; 
-  console.log({title: props.title, props, selection})  
+  };    
   
   return  (
     <div>
@@ -65,77 +64,73 @@ export default function CollectionsPicker (props) {
           </Text>
 
           <Button size="micro" onClick={() => {handleOpenPicker()}}>Add Collections</Button>
-        </div>
-        {
-          props.value.length >= 1 &&
-          
-          <ResourceList
-            resourceName={{singular: 'collection', plural: 'collections'}}
-            items={props.value}
-            showHeader={false}
-    
-            renderItem={(collection, id ,index) => {
-              const titleSplit = collection.title.split(' ')
-              let initials = ''
-              if(titleSplit.length > 1) {
-                initials = collection.title.split(' ').slice(0,2).map(string => string.charAt(0)).join('').toString()
-              } else {
-                initials = collection.title.charAt(0) + collection.title.charAt(1)
-              }
-              initials = initials.toUpperCase()
-    
-              let media = <Avatar shape='square' size='small' initials={initials} name={collection.title} />;
-              if(collection.image) {
-                media = <Thumbnail size="small" source={collection.image.originalSrc} alt={collection.image.altText}/>;
-              }
-    
-              return (
-                <ResourceItem
-                  id={collection.id}
-                  media={media}
-                >
-                  <LegacyStack vertical={true} alignment='baseline'>
-                    <Text variant="bodyMd" fontWeight="bold" as="h3">
-                      {collection.title}
-                    </Text>                    
-                    <Checkbox
-                      label="TWC SALE Metafield usage"
-                      checked={!!collection.checkedState}
-                      onChange={() => handleCheckboxChange(index)}                      
-                    />
-                    {  
-                      !!collection.checkedState && (
-                        <LegacyStack>
-                          <RadioButton          
-                            label="True"
-                            checked={!!collection.radioState}
-                            id={`${collection.id}-true`}
+        </div>       
+        <ResourceList
+          resourceName={{singular: 'collection', plural: 'collections'}}
+          items={selection}
+          showHeader={false}
+  
+          renderItem={(collection, id ,index) => {
+            const titleSplit = collection.title.split(' ')
+            let initials = ''
+            if(titleSplit.length > 1) {
+              initials = collection.title.split(' ').slice(0,2).map(string => string.charAt(0)).join('').toString()
+            } else {
+              initials = collection.title.charAt(0) + collection.title.charAt(1)
+            }
+            initials = initials.toUpperCase()
+  
+            let media = <Avatar shape='square' size='small' initials={initials} name={collection.title} />;
+            if(collection.image) {
+              media = <Thumbnail size="small" source={collection.image.originalSrc} alt={collection.image.altText}/>;
+            }
+  
+            return (
+              <ResourceItem
+                id={collection.id}
+                media={media}
+              >
+                <LegacyStack vertical={true} alignment='baseline'>
+                  <Text variant="bodyMd" fontWeight="bold" as="h3">
+                    {collection.title}
+                  </Text>                    
+                  <Checkbox
+                    label="TWC SALE Metafield usage"
+                    checked={!!collection.checkedState}
+                    onChange={() => handleCheckboxChange(index)}                      
+                  />
+                  {  
+                    !!collection.checkedState && (
+                      <LegacyStack>
+                        <RadioButton          
+                          label="True"
+                          checked={!!collection.radioState}
+                          id={`${collection.id}-true`}
+                          name={collection.title}         
+                          onChange={() => handleRadioChange(true, index)}
+                        />
+                        <RadioButton          
+                            label="False"
+                            checked={collection.radioState === false}
+                            id={`${collection.id}-false`}
                             name={collection.title}         
-                            onChange={() => handleRadioChange(true, index)}
-                          />
-                          <RadioButton          
-                              label="False"
-                              checked={collection.radioState === false}
-                              id={`${collection.id}-false`}
-                              name={collection.title}         
-                              onChange={() => handleRadioChange(false, index)}
-                          />                        
-                        </LegacyStack>
-                      )                    
-                    }
-                  </LegacyStack>
-                </ResourceItem>
-              );
-            }}
-            emptyState={(
-                <Card>
-                  <Text as="h2" variant="bodyMd">
-                    EMPTY
-                  </Text>
-                </Card>
-              )}
-          />        
-        }
+                            onChange={() => handleRadioChange(false, index)}
+                        />                        
+                      </LegacyStack>
+                    )                    
+                  }
+                </LegacyStack>
+              </ResourceItem>
+            );
+          }}
+          emptyState={(
+              <Card>
+                <Text as="h2" variant="bodyMd">
+                  Select {props.title}
+                </Text>
+              </Card>
+            )}
+        />       
       </LegacyStack>
       <ResourcePicker
         resourceType="Collection"

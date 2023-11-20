@@ -327,7 +327,7 @@ export default function VolumeEdit() {
           collectionsToIgnore           
         },
       };
-      console.log('Form', form.configuration)
+      console.log({configuration: form.configuration})
       submitForm({ discount: JSON.stringify(discount) }, { method: "post" });
 
       return { status: "success" };
