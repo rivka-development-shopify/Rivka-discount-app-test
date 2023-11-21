@@ -1,130 +1,170 @@
+import { useEffect, useState } from 'react';
+import { ResourcePicker } from '@shopify/app-bridge-react';
 import {
-  FormLayout,
+  Card,
   Text,
   Button,
   ResourceList,
+  Avatar, Thumbnail,
   ResourceItem,
   LegacyStack,
-  Thumbnail,
-  Avatar,
-  Card
+  RadioButton,
+  Checkbox
 } from '@shopify/polaris';
-import { ResourcePicker } from '@shopify/app-bridge-react'
 
-import React, {
-  useEffect,
-  useState
-} from 'react'
 
-function index({
-  title,
-  onChange,
-  value: initialSelectedCollections,
-  emptyText
-}) {
-  const [showPicker, setPickerVisibility] = useState(false);
-  const [pickerInitialSelectionIds, setPickerInitialSelectionIds] = useState(initialSelectedCollections);
-  const [selectedCollections, setSelectedCollections] = useState(initialSelectedCollections);
+export default function CollectionsPicker (props) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCollections, setSelectedCollections] = useState(props.value ?? []);
 
-  useEffect(()=>{
-    onChange(selectedCollections)
-  },[selectedCollections])
+  useEffect(() => {
+    props.onChange(selectedCollections)
+  }, [selectedCollections])
 
-  const handleOpenPicker = (selected) => {
-    setPickerInitialSelectionIds(selected.map(product => ({id: product.shopify_id})));
-    setPickerVisibility(true);
+  const handleSelection = (rawResoursePickerSelectedCollections) => {
+    setIsOpen(false)
+    setSelectedCollections(
+      oldSelectedCollections => {
+        return rawResoursePickerSelectedCollections.map(
+          ({ title, id }) => {
+            const alreadySelectedCollection = oldSelectedCollections.find(
+              collection => collection.id === id
+            )
+
+            if(alreadySelectedCollection) {
+              return alreadySelectedCollection
+            } else {
+              return {
+                id,
+                title,
+                useMetafield: false,
+                metafiledValue: null
+              }
+            }
+          }
+        )
+      }
+    )
   };
 
-  const handlePickerSelection = (selection) => {
-    setSelectedCollections((oldState) => {
-      return selection.map(collection => {
-        const newCollection = {
-          shopify_id: collection.id,
-          title: collection.title,
+  const handleOpenPicker = () => setIsOpen(true);
+  const handleCancelPicker = () => setIsOpen(false);
+
+  const handleUseMetafieldChange = (collectionId) => {
+    setSelectedCollections(
+      oldSelectedCollections => {
+        const newSelectedCollections = [ ...oldSelectedCollections ];
+
+        const changedCollection = newSelectedCollections.find(
+          collection => collection.id === collectionId
+        )
+        if (changedCollection){
+          changedCollection.useMetafield = !changedCollection.useMetafield
+          changedCollection.metafiledValue = changedCollection.useMetafield ? true : null
         }
+        return newSelectedCollections
+      }
+    )
+  };
 
-        if (collection.image) {
-          newCollection.image = {
-              originalSrc: collection.image.originalSrc,
-              altText: collection.image.altText
-          }
+  const handleRadioChange = (value, collectionId) => {
+    setSelectedCollections(
+      oldSelectedCollections => {
+        const newSelectedCollections = [ ...oldSelectedCollections ];
+
+        const changedCollection = newSelectedCollections.find(
+          collection => collection.id === collectionId
+        )
+        if (changedCollection){
+          changedCollection.metafiledValue = value
         }
+        return newSelectedCollections
+      }
+    )
+  };
 
-        return newCollection
-      })
-    })
-    clearPickerState();
-  }
 
-  const clearPickerState = () => {
-    setPickerVisibility(false);
-    setPickerInitialSelectionIds([]);
-  }
+  return  (
+    <div>
+      <LegacyStack vertical={true}>
+        <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+          <Text as="h2" variant="bodyMd">
+            {props.title}
+          </Text>
+          <Button size="micro" onClick={() => {handleOpenPicker()}}>Add Collections</Button>
+        </div>
 
-  const handleAddCollectionsToApply = () => {
-    handleOpenPicker(selectedCollections)
-  }
+        <ResourceList
+          resourceName={{singular: 'collection', plural: 'collections'}}
+          items={selectedCollections}
+          showHeader={false}
 
-  return (
-    <LegacyStack vertical={true}>
-      <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-        <Text as="h2" variant="bodyMd">
-          {title}
-        </Text>
+          renderItem={(collection, id ,index) => {
+            const titleSplit = collection.title.split(' ')
+            let initials = ''
+            if(titleSplit.length > 1) {
+              initials = collection.title.split(' ').slice(0,2).map(string => string.charAt(0)).join('').toString()
+            } else {
+              initials = collection.title.charAt(0) + collection.title.charAt(1)
+            }
+            initials = initials.toUpperCase()
 
-        <Button size="micro" onClick={() => {handleAddCollectionsToApply()}}>Add Collections</Button>
-      </div>
-      <ResourceList
-        resourceName={{singular: 'collection', plural: 'collections'}}
-        items={selectedCollections}
-        showHeader={false}
+            let media = <Avatar shape='square' size='small' initials={initials} name={collection.title} />;
+            if(collection.image) {
+              media = <Thumbnail size="small" source={collection.image.originalSrc} alt={collection.image.altText}/>;
+            }
 
-        renderItem={(collection) => {
-          const titleSplit = collection.title.split(' ')
-          let initials = ''
-          if(titleSplit.length > 1) {
-            initials = collection.title.split(' ').slice(0,2).map(string => string.charAt(0)).join('').toString()
-          } else {
-            initials = collection.title.charAt(0) + collection.title.charAt(1)
-          }
-          initials = initials.toUpperCase()
-
-          let media = <Avatar shape='square' size='small' initials={initials} name={collection.title} />;
-          if(collection.image) {
-            media = <Thumbnail size="small" source={collection.image.originalSrc} alt={collection.image.altText}/>;
-          }
-
-          return (
-            <ResourceItem
-              id={collection.id}
-              media={media}
-            >
-              <LegacyStack vertical={true} alignment='baseline'>
-                <Text variant="bodyMd" fontWeight="bold" as="h3">
-                  {collection.title}
-                </Text>
-              </LegacyStack>
-            </ResourceItem>
-          );
-        }}
-        emptyState={(
-            <Card>
-              <Text as="h2" variant="bodyMd">
-                {emptyText}
-              </Text>
-            </Card>
-          )}
-      />
+            return (
+              <ResourceItem
+                id={collection.id}
+                media={media}
+              >
+                <LegacyStack vertical={true} alignment='baseline'>
+                  <Text variant="bodyMd" fontWeight="bold" as="h3">
+                    {collection.title}
+                  </Text>
+                  <Checkbox
+                    label="TWC SALE Metafield usage"
+                    checked={!!collection.useMetafield}
+                    onChange={() => handleUseMetafieldChange(collection.id)}
+                  />
+                  {
+                    !!collection.useMetafield && (
+                      <LegacyStack>
+                        <RadioButton
+                          label="True"
+                          checked={collection.metafiledValue}
+                          id={`${collection.id}-true`}
+                          name={collection.title}
+                          onChange={() => handleRadioChange(true, collection.id)}
+                        />
+                        <RadioButton
+                            label="False"
+                            checked={!collection.metafiledValue}
+                            id={`${collection.id}-false`}
+                            name={collection.title}
+                            onChange={() => handleRadioChange(false, collection.id)}
+                        />
+                      </LegacyStack>
+                    )
+                  }
+                </LegacyStack>
+              </ResourceItem>
+            );
+          }}
+          emptyState={(
+              <></>
+            )}
+        />
+      </LegacyStack>
       <ResourcePicker
-        selectMultiple={true}
-        open={showPicker}
-        resourceType='Collection'
-        initialSelectionIds={pickerInitialSelectionIds}
-        onSelection={({selection}) => { handlePickerSelection(selection)} }
-        onCancel={(e) => {clearPickerState()}}
+        resourceType="Collection"
+        open={isOpen}
+        initialSelectionIds={selectedCollections.map(collection => ({ id: collection.id }))}
+        // initialSelectionIds={[]}
+        onSelection={(resources) => handleSelection(resources.selection)}
+        onCancel={handleCancelPicker}
       />
-    </LegacyStack>
-  )
+    </div>
+  );
 }
-
-export default index

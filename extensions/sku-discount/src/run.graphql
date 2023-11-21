@@ -5,10 +5,9 @@ query RunInput($selectedCollectionIds: [ID!]) {
       merchandise {
         __typename
         ... on ProductVariant {
-          id          
-          product {           
+          id
+          product {
             id
-            inAnyCollection(ids: $selectedCollectionIds)
             inCollections(ids: $selectedCollectionIds) {
               collectionId
               isMember
@@ -24,7 +23,7 @@ query RunInput($selectedCollectionIds: [ID!]) {
   }
   discountNode {
     metafield(
-      namespace: "$app:sku-discount", 
+      namespace: "$app:sku-discount",
       key: "function-configuration"
     ) {
       value
