@@ -8,7 +8,6 @@ query RunInput($selectedCollectionIds: [ID!]) {
           id
           product {
             id
-            inAnyCollection(ids: $selectedCollectionIds)
             inCollections(ids: $selectedCollectionIds) {
               collectionId
               isMember

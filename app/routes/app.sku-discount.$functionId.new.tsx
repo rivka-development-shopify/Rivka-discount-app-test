@@ -226,7 +226,7 @@ export default function VolumeNew() {
           metafieldState: form.configuration.metafieldState,
         },
       };
-
+      console.log(JSON.stringify(form.configuration.collectionsToApply))
       submitForm({ discount: JSON.stringify(discount) }, { method: "post" });
 
       return { status: "success" };

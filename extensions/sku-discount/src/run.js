@@ -26,7 +26,9 @@ export function run(input) {
   *   quantity: number
   *   percentage: number
   *   collectionsToApplyIds: string[],
-  *   collectionsToIgnoreIds: string[]
+  *   collectionsToIgnoreIds: string[],
+  *   collectionsToApply: any,
+  *   collectionsToIgnore: any
   * }}
   */
   const configuration = JSON.parse(
@@ -38,54 +40,68 @@ export function run(input) {
 
   const { collectionsToApplyIds, collectionsToIgnoreIds } = configuration;
 
-  const validateDiscount = (lines) => {
-    return lines.filter(line => {
+  const validateDiscount = (lines, { collectionsToApply, collectionsToIgnore }) => {
+    collectionsToApply.forEach(collection => console.log('Apply', collection.id))
+    collectionsToIgnore.forEach(collection => console.log('Ignore', collection.id))
+    const result = lines.filter((line) => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
-      if(collectionsToApplyIds.length >= 1 && collectionsToIgnoreIds.length >= 1) {
-        if(variant.metafield?.value === 'false') {
-          return variant.product.inCollections.map(({ collectionId, isMember }) => {
-              if (isMember) {
-                  return collectionsToApplyIds.indexOf(collectionId) > -1
-              }
-              return collectionsToIgnoreIds.indexOf(collectionId) > -1
-          }).every((value) => value === true)
-        }
-      }
-      if(collectionsToApplyIds.length == 0 && collectionsToIgnoreIds.length >= 1) {
-        if(variant.metafield?.value === 'false') {
-          return variant.product.inCollections.map(({ collectionId, isMember }) => {
-              if (!isMember) {
-                  return collectionsToIgnoreIds.indexOf(collectionId) > -1
-              }
-          }).every((value) => value === true)
-        }
-        if(variant.metafield?.value === 'true') {
-          return variant.product.inCollections.map(({ collectionId, isMember }) => {
-              if (!isMember) {
-                  return collectionsToIgnoreIds.indexOf(collectionId) > -1
-              }
-          }).every((value) => value === true)
-        }
-      }
-      if(collectionsToApplyIds.length >= 1 && collectionsToIgnoreIds.length == 0) {
+      /* Logic to validate SALE25 like Code */
+      if(collectionsToApplyIds.length > 0 && collectionsToIgnoreIds.length == 0) {
         return variant.product.inCollections.map(({ collectionId, isMember }) => {
-            if (isMember) {
-                return collectionsToApplyIds.indexOf(collectionId) > -1
+          const matchCollectionFullObject = collectionsToApply.find(collection => collection.id === collectionId);
+          if (isMember) {
+            if("checkedState" in matchCollectionFullObject === false || (matchCollectionFullObject.checkedState === true && matchCollectionFullObject.radioState === true && variant.metafield?.value === "true")) {
+              return collectionsToApplyIds.indexOf(collectionId) > -1
             }
-        }).every((value) => value === true)
+          }
+        }).some((value) => value === true)
       }
-    })
-    .map(line => {
+      /* Logic to validate Premium35 like Code */
+      if (collectionsToApplyIds.length === 1 && collectionsToIgnoreIds.length > 0) {
+        const rulesValidationArray = variant.product.inCollections.map(({ collectionId, isMember }) => {
+          if(isMember && collectionsToIgnore.some(collection => collection.id === collectionId)) return false
+
+          const matchCollectionFullObject = collectionsToApply.find(collection => collection.id === collectionId);
+          if(
+            matchCollectionFullObject &&
+            matchCollectionFullObject.checkedState === true &&
+            matchCollectionFullObject.radioState === false &&
+            variant.metafield?.value !== "true"
+          ) return true
+
+        })
+        const filteredRulesValidationArray = rulesValidationArray.filter(value => value !== undefined);
+        return filteredRulesValidationArray.length > 0 && filteredRulesValidationArray.every((value) => value === true);
+      }
+      /* Logic to validate Estetica30 like Code */
+      if (collectionsToApplyIds.length > 0 && collectionsToIgnoreIds.length === 1) {
+        if (variant.metafield?.value !== "true") {
+          const rulesValidationArray = variant.product.inCollections.map(({ collectionId, isMember }) => {
+            if(isMember) {
+              if (collectionsToIgnoreIds.indexOf(collectionId) > -1) return false
+              if (collectionsToIgnoreIds.indexOf(collectionId) === -1) return true
+              if (collectionsToApplyIds.indexOf(collectionId) > -1) return true
+            }
+          });
+
+          const filteredRulesValidationArray = rulesValidationArray.filter(value => value !== undefined);
+          return filteredRulesValidationArray.length >= collectionsToApplyIds.length && filteredRulesValidationArray.every((value) => value === true);
+        }
+      }
+
+    });
+
+    return result.map((line) => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
       return /** @type {Target} */ ({
         productVariant: {
-          id: variant.id
-        }
+          id: variant.id,
+        },
       });
     });
-  }
+  };
 
-  const targets = validateDiscount(input.cart.lines);
+  const targets = validateDiscount(input.cart.lines, configuration);
 
   if (!targets.length) {
     return EMPTY_DISCOUNT;
