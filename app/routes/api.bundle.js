@@ -3,16 +3,10 @@ import * as fs from 'fs';
 import UglifyJS from 'uglify-js';
 import { json } from "@remix-run/node";
 import path from 'path';
-import { getPublicAuthKeyByKey } from '../controllers/publicAuthKeysController'
+import { validateAuthKeyParam } from '../utils/publicAuthKey'
 import JavaScriptObfuscator from 'javascript-obfuscator';
 
-const validateAuthKeyParam = (requestUrl) => {
 
-  const params =  new URLSearchParams(
-    new URL(requestUrl).searchParams
-  )
-  return getPublicAuthKeyByKey(params.get('publicAuthKey'))
-}
 
 // WILL THIS WORK IN PRODUCTION?
 const getBundleMinFile = async () => {

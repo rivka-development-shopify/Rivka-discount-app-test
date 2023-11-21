@@ -242,7 +242,7 @@ export const getDiscountsRulesByIds = async (stackDiscounts) => {
   )
 }
 
-export async function deleteTempDiscountById(shopifyTempDiscountId) {
+export const deleteTempDiscountById = async (shopifyTempDiscountId) => {
   const databaseSession = await prisma.session.findFirst()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
@@ -250,7 +250,6 @@ export async function deleteTempDiscountById(shopifyTempDiscountId) {
     const graphqlDiscountFormData = await admin.graphql(
       `mutation discountCodeDelete($id: ID!) {
         discountCodeDelete(id: $id) {
-          deletedCodeDiscountId
           userErrors {
             field
             code
@@ -265,10 +264,13 @@ export async function deleteTempDiscountById(shopifyTempDiscountId) {
       }
     )
 
-    const { data: { discountCodeDelete: { userErrors, deletedCodeDiscountId }} } = await graphqlDiscountFormData.json()
+    const { data: { discountCodeDelete: { userErrors }} } = await graphqlDiscountFormData.json()
 
     if(userErrors.length === 0) {
-      return deletedCodeDiscountId
+      return {
+        shopifyTempDiscountId,
+        userErrors
+      }
     } else {
       throw userErrors
     }
@@ -281,7 +283,7 @@ export async function deleteTempDiscountById(shopifyTempDiscountId) {
   }
 }
 
-export async function createNewTempDiscount(shopifyTempDiscount) {
+export const createNewTempDiscount = async (shopifyTempDiscount) => {
   const databaseSession = await prisma.session.findFirst()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
@@ -344,6 +346,7 @@ export async function createNewTempDiscount(shopifyTempDiscount) {
       return {
         id: codeDiscountNode.id,
         endsAt: shopifyTempDiscount.endsAt,
+        amount: shopifyTempDiscount.amount,
         code: shopifyTempDiscount.code
       }
     } else {
@@ -358,10 +361,71 @@ export async function createNewTempDiscount(shopifyTempDiscount) {
   }
 }
 
+export const updateTempDiscountById = async (shopifyTempDiscountId, shopifyTempDiscount) => {
+  const databaseSession = await prisma.session.findFirst()
+  const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
+
+  try {
+    const graphqlDiscountFormData = await admin.graphql(
+      `mutation discountCodeBasicUpdate($basicCodeDiscount: DiscountCodeBasicInput!, $id: ID!) {
+        discountCodeBasicUpdate(basicCodeDiscount: $basicCodeDiscount, id: $id) {
+          codeDiscountNode {
+            id
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }`,
+      {
+        variables: {
+          "id": shopifyTempDiscountId,
+          "basicCodeDiscount": {
+            "customerGets": {
+              "value": {
+                "discountAmount": {
+                  "amount": shopifyTempDiscount.amount,
+                  "appliesOnEachItem": false
+                }
+              }
+            }
+          },
+          "minimumRequirement": {
+            "subtotal": {
+              "greaterThanOrEqualToSubtotal": shopifyTempDiscount.minimumRequirement
+            }
+          },
+          "startsAt": shopifyTempDiscount.startsAt,
+          "endsAt": shopifyTempDiscount.endsAt
+        }
+      }
+    )
+    const { data: { discountCodeBasicUpdate: { userErrors, codeDiscountNode }} } = await graphqlDiscountFormData.json()
+
+    if(userErrors.length === 0) {
+      return {
+        id: codeDiscountNode.id,
+        endsAt: shopifyTempDiscount.endsAt,
+        amount: shopifyTempDiscount.amount,
+        code: shopifyTempDiscount.code
+      }
+    } else {
+      throw userErrors
+    }
+  } catch(e) {
+    console.error({
+      err: 'On craeting temp discount graphql request',
+      msg: e
+    })
+    return null
+  }
+}
 
 export default {
   getProductsDetails,
   getDiscountsRulesByIds,
   deleteTempDiscountById,
-  createNewTempDiscount
+  createNewTempDiscount,
+  updateTempDiscountById
 }

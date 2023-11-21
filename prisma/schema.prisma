@@ -34,3 +34,12 @@ model PublicAuthKey {
   id  String  @id @map("_id") @default(auto()) @db.ObjectId
   key String  @unique
 }
+
+model TempDiscountCode {
+  id                    String            @id @map("_id") @default(auto()) @db.ObjectId
+  shopify_id            String
+  code                  String
+  refered_code          String
+  endsAt                DateTime
+  amount                Float
+}
