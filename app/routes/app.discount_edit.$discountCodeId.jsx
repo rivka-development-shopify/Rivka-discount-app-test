@@ -46,7 +46,7 @@ export const loader = async ({ request, params }) => {
             node {
               id
               discount {
-                ... on DiscountCodeBasic {
+                ... on DiscountCodeFreeShipping {
                   title
                   status
                   codes(first: 5) {
@@ -68,7 +68,7 @@ export const loader = async ({ request, params }) => {
                     }
                   }
                 }
-                ... on DiscountCodeFreeShipping {
+                ... on DiscountCodeBasic {
                   title
                   status
                   codes(first: 5) {
@@ -78,6 +78,29 @@ export const loader = async ({ request, params }) => {
                       }
                     }
                   }
+                }
+                ... on DiscountCodeApp {
+                  title
+                  status
+                  codes(first: 5) {
+                    edges {
+                      node {
+                        code
+                      }
+                    }
+                  }
+                }
+                ... on DiscountAutomaticBxgy {
+                  title
+                  status
+                }
+                ... on DiscountAutomaticBasic {
+                  title
+                  status
+                }
+                ... on DiscountAutomaticApp {
+                  title
+                  status
                 }
               }
             }
@@ -91,14 +114,46 @@ export const loader = async ({ request, params }) => {
 
   const shopifyCurrentDiscounts = rawShopifyCurrentDiscounts.data.discountNodes.edges.map(
     edge => {
-      return {
-        id: edge.node.id,
-        title: edge.node.discount?.title || '',
-        status: edge.node.discount?.status || 'EXPIRED',
-        codes: edge.node.discount?.codes?.edges.map(edge => edge.node?.code || '') || []
+
+      let discount = edge.node.discount
+      if (edge.node.discount) {
+        let title = ''
+        let status = 'EXPIRED'
+        let codes = []
+
+        if (discount.title) {
+          title = discount.title
+        }
+        if (discount.status) {
+          status = discount.status
+        }
+        if (discount.codes) {
+          codes = discount.codes?.edges.map(edge => {
+            if (edge.node) {
+              if(edge.node.code) {
+                return edge.node.code
+              }
+            }
+            return ''
+          })
+        }
+
+        return {
+          id: edge.node.id,
+          title: title,
+          status: status,
+          codes: codes,
+        }
+      } else {
+        return {
+          id: edge.node.id,
+          title: '',
+          status: 'EXPIRED',
+          codes: edge.node.discount.codes ? edge.node.discount.codes?.edges.map(edge => edge.node?.code || '') : []
+        }
       }
     }
-  ).filter(discount => discount.status !== 'EXPIRED');
+  ).filter(discount => discount.status !== 'EXPIRED').filter(discount => !discount.id.includes('Automatic'));
 
   return json({ shop: session.shop.replace(".myshopify.com", ""), discountCode, shopifyCurrentDiscounts, discountCodeId: params.discountCodeId });
 };

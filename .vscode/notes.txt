@@ -238,3 +238,103 @@ query {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"stackedPriceRules": [
+  {
+    "type": "App",
+    "title": "DOUGLAS15",
+    "code": "DOUGLAS15",
+    "appliesOncePerCustomer": false,
+    "usageLimit": null,
+    "startsAt": "2023-11-14T06:01:22Z",
+    "endsAt": null,
+    "combinesWith": {
+      "orderDiscounts": false,
+      "productDiscounts": false,
+      "shippingDiscounts": false
+    },
+    "percentage": 0.15,
+    "minQuantity": null,
+    "collectionsToApply": [
+      "gid://shopify/Collection/293478826136"
+    ],
+    "collectionsToIgnore": [],
+    "productVariantsToApply": [],
+    "productVariantsToIgnore": []
+  }
+],
+"productsDetails": [
+  {
+    "title": "Selling Plans Ski Wax",
+    "collections": [
+      "gid://shopify/Collection/293047337112",
+      "gid://shopify/Collection/293478826136"
+    ],
+    "variant": {
+      "id": "gid://shopify/ProductVariant/42914666119320",
+      "metafield_twc_sale_item": "true",
+      "price": {
+        "amount": "24.95",
+        "currencyCode": "USD"
+      }
+    }
+  }
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

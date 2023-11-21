@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { json } from "@remix-run/node";
 import { useForm, useField } from "@shopify/react-form";
 import { useAppBridge } from "@shopify/app-bridge-react";
@@ -7,7 +7,6 @@ import { CurrencyCode } from "@shopify/react-i18n";
 import {
   Form,
   useActionData,
-  useLoaderData,
   useNavigation,
   useSubmit,
 } from "@remix-run/react";
@@ -31,18 +30,17 @@ import {
   Page,
   PageActions,
   TextField,
-  VerticalStack,
-  Button,
+  VerticalStack
+
 } from "@shopify/polaris";
 
 import shopify from "../shopify.server";
-import { NotFoundPage } from "../components/NotFoundPage";
 import CollectionsPicker from "~/components/CollectionsPicker";
 
 // This is a server-side action that is invoked when the form is submitted.
-// It makes an admin GraphQL request to update a discount.
+// It makes an admin GraphQL request to create a discount.
 export const action = async ({ params, request }) => {
-  const { id, functionId } = params;
+  const { functionId } = params;
   const { admin } = await shopify.authenticate.admin(request);
   const formData = await request.formData();
   const {
@@ -74,10 +72,11 @@ export const action = async ({ params, request }) => {
       appliesOncePerCustomer,
     };
 
+
     const response = await admin.graphql(
       `#graphql
-          mutation UpdateCodeDiscount($id: ID!, $discount: DiscountCodeAppInput!) {
-            discountUpdate: discountCodeAppUpdate(id: $id, codeAppDiscount: $discount) {
+          mutation CreateCodeDiscount($discount: DiscountCodeAppInput!) {
+            discountCreate: discountCodeAppCreate(codeAppDiscount: $discount) {
               userErrors {
                 code
                 message
@@ -87,12 +86,12 @@ export const action = async ({ params, request }) => {
           }`,
       {
         variables: {
-          id: `gid://shopify/DiscountCodeApp/${id}`,
           discount: {
             ...baseCodeDiscount,
             metafields: [
               {
-                id: configuration.metafieldId,
+                namespace: "$app:sku-discount",
+                key: "function-configuration",
                 type: "json",
                 value: JSON.stringify(configuration),
               },
@@ -103,14 +102,13 @@ export const action = async ({ params, request }) => {
     );
 
     const responseJson = await response.json();
-
-    const errors = responseJson.data.discountUpdate?.userErrors;
+    const errors = responseJson.data.discountCreate?.userErrors;
     return json({ errors });
   } else {
     const response = await admin.graphql(
       `#graphql
-          mutation UpdateAutomaticDiscount($id: ID!, $discount: DiscountAutomaticAppInput!) {
-            discountUpdate: discountAutomaticAppUpdate(id: $id, automaticAppDiscount: $discount) {
+          mutation CreateAutomaticDiscount($discount: DiscountAutomaticAppInput!) {
+            discountCreate: discountAutomaticAppCreate(automaticAppDiscount: $discount) {
               userErrors {
                 code
                 message
@@ -120,12 +118,12 @@ export const action = async ({ params, request }) => {
           }`,
       {
         variables: {
-          id: `gid://shopify/DiscountAutomaticApp/${id}`,
           discount: {
             ...baseDiscount,
             metafields: [
               {
-                id: configuration.metafieldId,
+                namespace: "$app:sku-discount",
+                key: "function-configuration",
                 type: "json",
                 value: JSON.stringify(configuration),
               },
@@ -136,126 +134,24 @@ export const action = async ({ params, request }) => {
     );
 
     const responseJson = await response.json();
-    const errors = responseJson.data.discountUpdate?.userErrors;
+    const errors = responseJson.data.discountCreate?.userErrors;
     return json({ errors });
   }
 };
 
-// This is invoked on the server to load the discount data with an admin GraphQL request. The result
-// is used by the component below to render the form.
-export const loader = async ({ params, request }) => {
-  const { id } = params;
-  const { admin } = await shopify.authenticate.admin(request);
-
-  const response = await admin.graphql(
-    `#graphql
-      query GetDiscount($id: ID!) {
-        discountNode(id: $id) {
-          id
-          configurationField: metafield(
-            namespace: "$app:sku-discount"
-            key: "function-configuration"
-          ) {
-            id
-            value
-          }
-          discount {
-            __typename
-            ... on DiscountAutomaticApp {
-              title
-              discountClass
-              combinesWith {
-                orderDiscounts
-                productDiscounts
-                shippingDiscounts
-              }
-              startsAt
-              endsAt
-            }
-            ... on DiscountCodeApp {
-              title
-              discountClass
-              combinesWith {
-                orderDiscounts
-                productDiscounts
-                shippingDiscounts
-              }
-              startsAt
-              endsAt
-              usageLimit
-              appliesOncePerCustomer
-              codes(first: 1) {
-                nodes {
-                  code
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        id: `gid://shopify/DiscountNode/${id}`,
-      },
-    }
-  );
-
-  const responseJson = await response.json();
-
-  if (
-    !responseJson.data.discountNode ||
-    !responseJson.data.discountNode.discount
-  ) {
-    return json({ discount: null });
-  }
-
-  const method =
-    responseJson.data.discountNode.discount.__typename === "DiscountCodeApp"
-      ? DiscountMethod.Code
-      : DiscountMethod.Automatic;
-  const {
-    title,
-    codes,
-    combinesWith,
-    usageLimit,
-    appliesOncePerCustomer,
-    startsAt,
-    endsAt,
-  } = responseJson.data.discountNode.discount;
-  const configuration = JSON.parse(
-    responseJson.data.discountNode.configurationField.value
-  );
-
-  const discount = {
-    title,
-    method,
-    code: codes?.nodes[0]?.code ?? "",
-    combinesWith,
-    usageLimit: usageLimit ?? null,
-    appliesOncePerCustomer: appliesOncePerCustomer ?? false,
-    startsAt,
-    endsAt,
-    configuration: {
-      ...configuration,
-      metafieldId: responseJson.data.discountNode.configurationField.id,
-    },
-  };
-
-  return json({ discount });
-};
-
 // This is the React component for the page.
-export default function VolumeEdit() {
+export default function VolumeNew() {
   const submitForm = useSubmit();
   const actionData = useActionData();
-  const { discount } = useLoaderData();
   const navigation = useNavigation();
   const app = useAppBridge();
+  const todaysDate = useMemo(() => new Date(), []);
 
   const isLoading = navigation.state === "submitting";
   const currencyCode = CurrencyCode.Cad;
   const submitErrors = actionData?.errors || [];
   const redirect = Redirect.create(app);
+
 
   useEffect(() => {
     if (actionData?.errors.length === 0) {
@@ -265,11 +161,6 @@ export default function VolumeEdit() {
     }
   }, [actionData]);
 
-  if (!discount) {
-    return <NotFoundPage />;
-  }
-
-  const { metafieldId } = discount.configuration;
   const {
     fields: {
       discountTitle,
@@ -288,22 +179,27 @@ export default function VolumeEdit() {
     submit,
   } = useForm({
     fields: {
-      discountTitle: useField(discount.title),
-      discountMethod: useField(discount.method),
-      discountCode: useField(discount.code),
-      combinesWith: useField(discount.combinesWith),
+      discountTitle: useField(""),
+      discountMethod: useField(DiscountMethod.Code),
+      discountCode: useField(""),
+      combinesWith: useField({
+        orderDiscounts: false,
+        productDiscounts: false,
+        shippingDiscounts: false,
+      }),
       requirementType: useField(RequirementType.None),
       requirementSubtotal: useField("0"),
       requirementQuantity: useField("0"),
-      usageLimit: useField(discount.usageLimit),
-      appliesOncePerCustomer: useField(discount.appliesOncePerCustomer),
-      startDate: useField(discount.startsAt),
-      endDate: useField(discount.endsAt),
+      usageLimit: useField(null),
+      appliesOncePerCustomer: useField(false),
+      startDate: useField(todaysDate),
+      endDate: useField(null),
       configuration: {
-        quantity: useField(discount.configuration.quantity),
-        percentage: useField(discount.configuration.percentage),
-        collectionsToApply: useField(discount.configuration.collectionsToApply),
-        collectionsToIgnore: useField(discount.configuration.collectionsToIgnore),
+        quantity: useField("0"),
+        percentage: useField("0"),
+        collectionsToApply: useField([]),
+        collectionsToIgnore: useField([]),
+        metafieldState: useField(false)
       },
     },
     onSubmit: async (form) => {
@@ -320,23 +216,22 @@ export default function VolumeEdit() {
         startsAt: form.startDate,
         endsAt: form.endDate,
         configuration: {
-          metafieldId,
           quantity: parseInt(form.configuration.quantity),
           percentage: parseFloat(form.configuration.percentage),
           selectedCollectionIds: collectionsToApplyIds.concat(collectionsToIgnoreIds),
           collectionsToApplyIds: collectionsToApplyIds,
           collectionsToIgnoreIds: collectionsToIgnoreIds,
           collectionsToApply: collectionsToApply,
-          collectionsToIgnore: collectionsToIgnore
+          collectionsToIgnore: collectionsToIgnore,
+          metafieldState: form.configuration.metafieldState,
         },
       };
-      console.log('Form', form.configuration)
+
       submitForm({ discount: JSON.stringify(discount) }, { method: "post" });
 
       return { status: "success" };
     },
   });
-
 
   const errorBanner =
     submitErrors.length > 0 ? (
@@ -359,7 +254,7 @@ export default function VolumeEdit() {
   return (
     // Render a discount form using Polaris components and the discount app components
     <Page
-      title="Edit custom discount"
+      title="Create volume discount"
       backAction={{
         content: "Discounts",
         onAction: () => onBreadcrumbAction(redirect, true),
@@ -393,8 +288,8 @@ export default function VolumeEdit() {
                     {...configuration.percentage}
                     suffix="%"
                   />
-                  <CollectionsPicker {...configuration.collectionsToApply} title="Collections to Apply"/>
-                  <CollectionsPicker {...configuration.collectionsToIgnore} title="Collections to Ignore"/>
+                  <CollectionsPicker {...configuration.collectionsToApply} title="Collections to Apply" />
+                  <CollectionsPicker {...configuration.collectionsToIgnore} title="Collections to Ignore" />
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (

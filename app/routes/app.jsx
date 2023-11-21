@@ -34,6 +34,9 @@ export default function App() {
             <Link to="/app" rel="home">
               Home
             </Link>
+            <Link to="/app/create_public_key" rel="Create Public Auth Key">
+              Public Auth Key
+            </Link>
           </ui-nav-menu>
           <Outlet />
         </DiscountProvider>
