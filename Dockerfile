@@ -7,7 +7,4 @@ COPY . .
 RUN npm install
 RUN npm run build
 
-RUN npx prisma generate
-RUN npx prisma db push
-
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "docker-start"]
