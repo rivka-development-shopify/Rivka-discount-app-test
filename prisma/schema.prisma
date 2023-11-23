@@ -3,7 +3,7 @@
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = "mongodb+srv://rivka:ssPvQNbTNHrBTeny@rivkacluster.evz69df.mongodb.net/rivkaShopifyDiscountApp"
 }
 
 generator client {
