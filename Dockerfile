@@ -4,11 +4,10 @@ EXPOSE 3000
 WORKDIR /app
 COPY . .
 
-RUN npx prisma generate
-RUN npx prisma db push
-
 RUN npm install
 RUN npm run build
 
+RUN npx prisma generate
+RUN npx prisma db push
 
 CMD ["npm", "run", "start"]
