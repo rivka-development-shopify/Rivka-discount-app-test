@@ -10,77 +10,83 @@ import JavaScriptObfuscator from 'javascript-obfuscator';
 
 // WILL THIS WORK IN PRODUCTION? -> NO
 const getBundleMinFile = async () => {
-  const cwd = process.cwd();
-  const bundlePath = new URL(`${cwd}/assets/bundle.js`).pathname;
-  console.log('TESTING')
-  console.log(bundlePath)
-  console.log('END TESTING')
-  const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
-  const bundle = rawBundle
-  const { code } = UglifyJS.minify(bundle)
-  const bundleMin = JavaScriptObfuscator.obfuscate(
-    code, {
-        compact: false,
-        controlFlowFlattening: true,
-        controlFlowFlatteningThreshold: 1,
-        numbersToExpressions: true,
-        simplify: true,
-        stringArrayShuffle: true,
-        splitStrings: true,
-        stringArrayThreshold: 1
-    }
-  );
-  return bundleMin.getObfuscatedCode()
+  try {
+
+    const cwd = process.cwd();
+    const bundlePath = new URL(`${cwd}/assets/bundle.js`).pathname;
+
+    const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
+    const bundle = rawBundle
+    const { code } = UglifyJS.minify(bundle)
+    const bundleMin = JavaScriptObfuscator.obfuscate(
+      code, {
+          compact: false,
+          controlFlowFlattening: true,
+          controlFlowFlatteningThreshold: 1,
+          numbersToExpressions: true,
+          simplify: true,
+          stringArrayShuffle: true,
+          splitStrings: true,
+          stringArrayThreshold: 1
+      }
+    );
+    return bundleMin.getObfuscatedCode()
+  } catch(e) {
+    console.log('TESTING')
+    console.log(process.cwd())
+    console.log('END TESTING')
+    return null
+  }
 }
 
 export async function loader({ request }) {
 
-  if(!validateAuthKeyParam(request.url)) {
-      throw {
-        type: 'IncorrectAuthKey'
+  try {
+    if(!validateAuthKeyParam(request.url)) {
+        throw {
+          type: 'IncorrectAuthKey'
+        }
       }
-    }
 
     return new Response(await getBundleMinFile(), {
       headers: {
         'Content-Type': 'application/javascript',
       },
     });
-  //   try {
-  // } catch(e) {
-  //   if(e.type) {
-  //     switch(e.type){
-  //       case 'IncorrectAuthKey':
-  //         console.error(e)
-  //         return json(
-  //           {
-  //             err: 'Bad Request'
-  //           },
-  //           {
-  //             status: 400,
-  //             headers: {
-  //               "Content-Type": "application/json",
-  //             },
-  //           }
-  //         )
-  //         break;
-  //     }
-  //   } else {
-  //     console.error({
-  //       msg: 'Error on bundle endpoint',
-  //       err: e
-  //     })
-  //     return json(
-  //       {
-  //         err: 'Internal Server Error'
-  //       },
-  //       {
-  //         status: 500,
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     )
-  //   }
-  // }
+  } catch(e) {
+    if(e.type) {
+      switch(e.type){
+        case 'IncorrectAuthKey':
+          console.error(e)
+          return json(
+            {
+              err: 'Bad Request'
+            },
+            {
+              status: 400,
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          )
+          break;
+      }
+    } else {
+      console.error({
+        msg: 'Error on bundle endpoint',
+        err: e
+      })
+      return json(
+        {
+          err: 'Internal Server Error'
+        },
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+    }
+  }
 }
