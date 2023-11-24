@@ -1,0 +1,23 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "Custom Discounts (Rivka)"
+client_id = "44e2f00e7df8d399502fdda348e7ac3c"
+application_url = "https://rivkacustomdiscounts.tech"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products,read_products,write_discounts,read_discounts,read_price_rules,write_price_rules,unauthenticated_read_product_listings"
+
+[auth]
+redirect_urls = [
+  "https://rivkacustomdiscounts.tech/auth/callback",
+  "https://rivkacustomdiscounts.tech/auth/shopify/callback",
+  "https://rivkacustomdiscounts.tech/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2023-10"
+
+[pos]
+embedded = false
