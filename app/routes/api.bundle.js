@@ -11,7 +11,7 @@ import JavaScriptObfuscator from 'javascript-obfuscator';
 // WILL THIS WORK IN PRODUCTION?
 const getBundleMinFile = async () => {
   const cwd = process.cwd();
-  const bundlePath = new URL(`${cwd}/app/assets/bundle.js`).pathname;
+  const bundlePath = new URL(`${cwd}/assets/bundle.js`).pathname;
   const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
   const bundle = rawBundle
   const { code } = UglifyJS.minify(bundle)
