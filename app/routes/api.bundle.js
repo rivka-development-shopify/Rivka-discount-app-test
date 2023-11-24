@@ -10,8 +10,13 @@ import JavaScriptObfuscator from 'javascript-obfuscator';
 
 // WILL THIS WORK IN PRODUCTION? -> NO
 const getBundleMinFile = async () => {
+  try {
+
     const cwd = process.cwd();
-    const bundlePath = `${cwd}/app/assets/bundle.js`;
+    let bundlePath = `${cwd}/app/assets/bundle.js`;
+    if(process.env.NODE_ENV !== 'production') {
+      bundlePath = new URL(`${cwd}/app/assets/bundle.js`).pathname;
+    }
 
     const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
     const bundle = rawBundle
@@ -29,6 +34,19 @@ const getBundleMinFile = async () => {
       }
     );
     return bundleMin.getObfuscatedCode()
+  } catch(e) {
+    console.log('TESTING')
+    const bundlePath = `${process.cwd()}/app/assets`
+
+    fs.readdir(bundlePath, (err, files) => {
+      files.forEach(file => {
+        console.log(file);
+      });
+    });
+    console.log('')
+    console.log('END TESTING')
+    return null
+  }
 }
 
 export async function loader({ request }) {
