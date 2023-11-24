@@ -33,11 +33,16 @@ const getBundleMinFile = async () => {
     return bundleMin.getObfuscatedCode()
   } catch(e) {
     console.log('TESTING')
-    fs.readdir(`${process.cwd()}/app/assets/bundle.js`, (err, files) => {
+    const bundlePath = `${process.cwd()}/app/assets`
+
+    fs.readdir(bundlePath, (err, files) => {
       files.forEach(file => {
         console.log(file);
       });
     });
+    console.log('TEST 2')
+    const rawBundle = await fs.promises.readFile(`${bundlePath}/bundle.js`, 'utf-8');
+    console.log(rawBundle)
     console.log('END TESTING')
     return null
   }
