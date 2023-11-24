@@ -34,9 +34,8 @@ const getBundleMinFile = async () => {
 }
 
 export async function loader({ request }) {
-  try {
 
-    if(!validateAuthKeyParam(request.url)) {
+  if(!validateAuthKeyParam(request.url)) {
       throw {
         type: 'IncorrectAuthKey'
       }
@@ -47,40 +46,41 @@ export async function loader({ request }) {
         'Content-Type': 'application/javascript',
       },
     });
-  } catch(e) {
-    if(e.type) {
-      switch(e.type){
-        case 'IncorrectAuthKey':
-          console.error(e)
-          return json(
-            {
-              err: 'Bad Request'
-            },
-            {
-              status: 400,
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          )
-          break;
-      }
-    } else {
-      console.error({
-        msg: 'Error on bundle endpoint',
-        err: e
-      })
-      return json(
-        {
-          err: 'Internal Server Error'
-        },
-        {
-          status: 500,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
-    }
-  }
+  //   try {
+  // } catch(e) {
+  //   if(e.type) {
+  //     switch(e.type){
+  //       case 'IncorrectAuthKey':
+  //         console.error(e)
+  //         return json(
+  //           {
+  //             err: 'Bad Request'
+  //           },
+  //           {
+  //             status: 400,
+  //             headers: {
+  //               "Content-Type": "application/json",
+  //             },
+  //           }
+  //         )
+  //         break;
+  //     }
+  //   } else {
+  //     console.error({
+  //       msg: 'Error on bundle endpoint',
+  //       err: e
+  //     })
+  //     return json(
+  //       {
+  //         err: 'Internal Server Error'
+  //       },
+  //       {
+  //         status: 500,
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     )
+  //   }
+  // }
 }
