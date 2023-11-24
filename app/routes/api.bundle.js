@@ -34,6 +34,11 @@ const getBundleMinFile = async () => {
   } catch(e) {
     console.log('TESTING')
     console.log(process.cwd())
+    fs.readdir(process.cwd(), (err, files) => {
+      files.forEach(file => {
+        console.log(file);
+      });
+    });
     console.log('END TESTING')
     return null
   }
