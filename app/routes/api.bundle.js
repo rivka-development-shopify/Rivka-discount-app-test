@@ -8,36 +8,55 @@ import JavaScriptObfuscator from 'javascript-obfuscator';
 
 
 
-// WILL THIS WORK IN PRODUCTION?
+// WILL THIS WORK IN PRODUCTION? -> NO
 const getBundleMinFile = async () => {
-  const cwd = process.cwd();
-  const bundlePath = new URL(`${cwd}/app/assets/bundle.js`).pathname;
-  const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
-  const bundle = rawBundle
-  const { code } = UglifyJS.minify(bundle)
-  const bundleMin = JavaScriptObfuscator.obfuscate(
-    code, {
-        compact: false,
-        controlFlowFlattening: true,
-        controlFlowFlatteningThreshold: 1,
-        numbersToExpressions: true,
-        simplify: true,
-        stringArrayShuffle: true,
-        splitStrings: true,
-        stringArrayThreshold: 1
+  try {
+
+    const cwd = process.cwd();
+    let bundlePath = `${cwd}/app/assets/bundle.js`;
+    if(process.env.NODE_ENV !== 'production') {
+      bundlePath = new URL(`${cwd}/app/assets/bundle.js`).pathname;
     }
-  );
-  return bundleMin.getObfuscatedCode()
+
+    const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
+    const bundle = rawBundle
+    const { code } = UglifyJS.minify(bundle)
+    const bundleMin = JavaScriptObfuscator.obfuscate(
+      code, {
+          compact: false,
+          controlFlowFlattening: true,
+          controlFlowFlatteningThreshold: 1,
+          numbersToExpressions: true,
+          simplify: true,
+          stringArrayShuffle: true,
+          splitStrings: true,
+          stringArrayThreshold: 1
+      }
+    );
+    return bundleMin.getObfuscatedCode()
+  } catch(e) {
+    console.log('TESTING')
+    const bundlePath = `${process.cwd()}/app/assets`
+
+    fs.readdir(bundlePath, (err, files) => {
+      files.forEach(file => {
+        console.log(file);
+      });
+    });
+    console.log('')
+    console.log('END TESTING')
+    return null
+  }
 }
 
 export async function loader({ request }) {
-  try {
 
+  try {
     if(!validateAuthKeyParam(request.url)) {
-      throw {
-        type: 'IncorrectAuthKey'
+        throw {
+          type: 'IncorrectAuthKey'
+        }
       }
-    }
 
     return new Response(await getBundleMinFile(), {
       headers: {
