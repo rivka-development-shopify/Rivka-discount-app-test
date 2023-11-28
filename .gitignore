@@ -10,6 +10,7 @@ node_modules
 database.sqlite
 
 .env
+.env.*
 .env.discount-app-test-1
 .env.dev-custom-discounts-rivka
 .env.dev-custom-discounts-rivka-douglas
@@ -18,6 +19,7 @@ package-lock.json
 yarn.lock
 
 shopify.app.toml
+shopify.app.*.toml
 shopify.app.custom-discounts-rivka.toml
 shopify.app.dev-custom-discounts-rivka-douglas.toml
 shopify.app.dev-custom-discounts-rivka-wilmer.toml

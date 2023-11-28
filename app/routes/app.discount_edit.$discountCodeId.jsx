@@ -167,7 +167,7 @@ export async function action({ request  }) {
     const discount = await JSON.parse(body.discount)
     switch(request.method) {
       case 'PUT':
-        updateDiscountCode(discount)
+        await updateDiscountCode(discount)
         break;
     }
 
@@ -192,6 +192,7 @@ export default function Index() {
     if(actionData != null) {
       setDiscountCode(actionData.discountCode.code);
       setSelectedDiscount(actionData.discountCode.stackDiscounts)
+      setFormModified(false)
     }
   },
   [actionData])
@@ -200,6 +201,7 @@ export default function Index() {
     if(loaderDiscount != null) {
       setDiscountCode(loaderDiscount.code);
       setSelectedDiscount(loaderDiscount.stackDiscounts)
+      setFormModified(false)
     }
   },
   [loaderDiscount])
