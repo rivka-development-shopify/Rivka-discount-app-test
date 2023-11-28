@@ -11,6 +11,9 @@ database.sqlite
 
 .env
 .env.discount-app-test-1
+.env.dev-custom-discounts-rivka
+.env.dev-custom-discounts-rivka-douglas
+.env.dev-custom-discounts-rivka-wilmer
 package-lock.json
 yarn.lock
 
