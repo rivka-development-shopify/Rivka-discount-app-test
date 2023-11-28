@@ -37,7 +37,9 @@ export const getProductsDetails = async (products) => {
           }
         `)
         const { data: { product: grahqlProduct } } = await graphqlProductFormData.json()
-
+        console.log('TESTING')
+        console.log(grahqlProduct)
+        console.log('END TESTING')
         return {
           id: productId,
           title: grahqlProduct.title,
@@ -169,6 +171,11 @@ export const getDiscountsRulesByIds = async (stackDiscounts) => {
             }
         `)
         const { data: { discountNode: grahqlDiscountNode } } = await graphqlDiscountFormData.json()
+
+
+        console.log('TEST2')
+        console.log(grahqlDiscountNode)
+        console.log('END TEST2')
 
         let discountNode = {};
         let discountNodeConfiguration = {};
