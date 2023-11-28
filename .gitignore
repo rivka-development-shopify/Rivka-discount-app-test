@@ -15,6 +15,10 @@ package-lock.json
 yarn.lock
 
 shopify.app.toml
+shopify.app.custom-discounts-rivka.toml
+shopify.app.dev-custom-discounts-rivka-douglas.toml
+shopify.app.dev-custom-discounts-rivka-wilmer.toml
+
 extensions/ui-error-msgs
 extensions/product-discount-js
 extensions/douglas-discount
