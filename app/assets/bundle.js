@@ -155,7 +155,10 @@ const createForm = () => {
   input.id = 'rivka-app-discount-code-input'
   button.id = 'rivka-app-discount-code-submit'
 
-  button.onclick = handleApplyDiscount
+  button.onclick = (e) => {
+    e.preventDefault()
+    handleApplyDiscount()
+  }
   button.appendChild(document.createTextNode('GO!'))
   div.appendChild(input)
   div.appendChild(button)
