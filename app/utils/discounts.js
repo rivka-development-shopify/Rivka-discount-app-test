@@ -16,7 +16,10 @@ export const checkIfProductBelongsToPriceRule = (productDetails, priceRule) => {
     if(productDetails.collections.includes(collection.id)) {
       if(collection.useMetafield) {
         if(
-          `${productDetails.variant.metafield_twc_sale_item === 'true' ? true : false}`
+          `${(
+            productDetails.variant.metafield_twc_sale_item &&
+            productDetails.variant.metafield_twc_sale_item === 'true'
+            ) ? true : false}`
           !==
           `${collection.metafiledValue}`
         ) {
