@@ -37,9 +37,11 @@ export const getProductsDetails = async (products) => {
           }
         `)
         const { data: { product: grahqlProduct } } = await graphqlProductFormData.json()
+
         console.log('TESTING')
         console.log(grahqlProduct)
         console.log('END TESTING')
+
         return {
           id: productId,
           title: grahqlProduct.title,
@@ -318,8 +320,6 @@ export const createNewTempDiscount = async (shopifyTempDiscount) => {
               "shippingDiscounts": true
             },
             "customerGets": {
-              "appliesOnOneTimePurchase": true,
-              "appliesOnSubscription": true,
               "items": {
                 "all": true
               },
@@ -339,7 +339,6 @@ export const createNewTempDiscount = async (shopifyTempDiscount) => {
                 "greaterThanOrEqualToSubtotal": shopifyTempDiscount.minimumRequirement
               }
             },
-            "recurringCycleLimit": 1,
             "startsAt": shopifyTempDiscount.startsAt,
             "title": shopifyTempDiscount.title,
             "usageLimit": 1
