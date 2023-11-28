@@ -2,7 +2,7 @@
   "name": "custom-discounts-rivka",
   "private": true,
   "scripts": {
-    "build": "SET NODE_ENV=production && remix build",
+    "build": "NODE_ENV=production && remix build",
     "predev": "prisma generate && prisma db push",
     "dev": "shopify app dev",
     "ngrok-dev": "npm run dev -- --tunnel-url https://d8ab-181-31-154-153.ngrok-free.app:62132",
