@@ -219,15 +219,6 @@ export default function Index() {
     setSelectedDiscount(value)
   }
 
-
-  const handleTestButton = () => {
-    console.log({
-      discountCodeId,
-      discountCode,
-      stackDiscounts: selectedDiscounts
-    })
-  }
-
   const handleFormSubmit = () => {
     submit({
       discount: JSON.stringify({

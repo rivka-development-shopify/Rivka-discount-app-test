@@ -81,9 +81,9 @@ export const getProductDiscountedPrices = (productsDetails, stackedPriceRules) =
     return {
       productId: productDetails.id,
       productVariantId: productDetails.variant.id,
-      price: productDetails.variant.price.amount * 1.0,
-      discountedPrice: productDetails.variant.price.amount - productDetails.variant.price.amount * percentage,
-      discountApplied: productDetails.variant.price.amount * percentage,
+      price: productDetails.variant.price.amount * 1.0 * productDetails.quantity,
+      discountedPrice: (productDetails.variant.price.amount - (productDetails.variant.price.amount * percentage)) * productDetails.quantity,
+      discountApplied: (productDetails.variant.price.amount * percentage) * productDetails.quantity,
       percentageApplied: percentage,
       discountsApplied: discountsApplied.map(discount => discount.title)
     }
@@ -95,6 +95,7 @@ export const calculatePricesForProducts = async (stackedDiscounts, cartProducts)
   const stackedPriceRules = await getDiscountsRulesByIds(stackedDiscounts)
 
   const productsDetails = await getProductsDetails(cartProducts)
+
 
   if(productsDetails && stackedPriceRules) {
     const productDiscountedPrices = getProductDiscountedPrices(productsDetails, stackedPriceRules)

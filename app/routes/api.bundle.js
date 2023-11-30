@@ -35,16 +35,6 @@ const getBundleMinFile = async () => {
     );
     return bundleMin.getObfuscatedCode()
   } catch(e) {
-    console.log('TESTING')
-    const bundlePath = `${process.cwd()}/app/assets`
-
-    fs.readdir(bundlePath, (err, files) => {
-      files.forEach(file => {
-        console.log(file);
-      });
-    });
-    console.log('')
-    console.log('END TESTING')
     return null
   }
 }

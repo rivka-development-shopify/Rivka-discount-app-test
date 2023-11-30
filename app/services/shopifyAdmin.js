@@ -1,12 +1,12 @@
 import shopify, { authenticate, sessionStorage } from "../shopify.server";
-import prisma from "../db.server";
+import { getShop } from '../utils/session'
 
 export const getProductsDetails = async (products) => {
-  const databaseSession = await prisma.session.findFirst()
+  const databaseSession = await getShop()
   const { storefront } = await shopify.unauthenticated.storefront(databaseSession.shop)
 
   return Promise.all(
-    products.map(async ({productId, productVariantId}) => {
+    products.map(async ({productId, productVariantId, quantity}) => {
       try {
         const graphqlProductFormData = await storefront.graphql(`
           query {
@@ -38,10 +38,6 @@ export const getProductsDetails = async (products) => {
         `)
         const { data: { product: grahqlProduct } } = await graphqlProductFormData.json()
 
-        console.log('TESTING')
-        console.log(grahqlProduct)
-        console.log('END TESTING')
-
         return {
           id: productId,
           title: grahqlProduct.title,
@@ -50,7 +46,8 @@ export const getProductsDetails = async (products) => {
             id: node.id,
             metafield_twc_sale_item: node.metafield?.value ?? null,
             price: node.price
-          })).find(variant => variant.id === productVariantId)
+          })).find(variant => variant.id === productVariantId),
+          quantity: parseInt(quantity)
         }
       } catch(e) {
         console.error({
@@ -64,15 +61,16 @@ export const getProductsDetails = async (products) => {
 }
 
 export const getDiscountsRulesByIds = async (stackDiscounts) => {
-  const databaseSession = await prisma.session.findFirst()
+  const databaseSession = await getShop()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
   return Promise.all(
     stackDiscounts.map(async (UI_discountId) => {
       try {
         const graphqlDiscountFormData = await admin.graphql(`
-            query GetDiscount {
-              discountNode(id: "${UI_discountId}") {
+            #graphql
+              query GetDiscount($id: ID!) {
+              discountNode(id: $id) {
                 id
                 configurationField: metafield(
                   namespace: "$app:sku-discount"
@@ -171,13 +169,16 @@ export const getDiscountsRulesByIds = async (stackDiscounts) => {
                 }
               }
             }
-        `)
-        const { data: { discountNode: grahqlDiscountNode } } = await graphqlDiscountFormData.json()
+        `,
+        {
+          variables: {
+            id: UI_discountId,
+          }
+        })
+        const a = await graphqlDiscountFormData.json()
+        const { data: { discountNode: grahqlDiscountNode } } = a
 
 
-        console.log('TEST2')
-        console.log(grahqlDiscountNode)
-        console.log('END TEST2')
 
         let discountNode = {};
         let discountNodeConfiguration = {};
@@ -242,7 +243,7 @@ export const getDiscountsRulesByIds = async (stackDiscounts) => {
         return discountNode
       } catch(e) {
         console.error({
-          err: 'On storefront graphql discount code request',
+          err: 'On ADMIN graphql discount code request',
           msg: e
         })
         return null
@@ -252,7 +253,7 @@ export const getDiscountsRulesByIds = async (stackDiscounts) => {
 }
 
 export const deleteTempDiscountById = async (shopifyTempDiscountId) => {
-  const databaseSession = await prisma.session.findFirst()
+  const databaseSession = await getShop()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
   try {
@@ -293,7 +294,7 @@ export const deleteTempDiscountById = async (shopifyTempDiscountId) => {
 }
 
 export const createNewTempDiscount = async (shopifyTempDiscount) => {
-  const databaseSession = await prisma.session.findFirst()
+  const databaseSession = await getShop()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
   try {
@@ -360,7 +361,7 @@ export const createNewTempDiscount = async (shopifyTempDiscount) => {
     }
   } catch(e) {
     console.error({
-      err: 'On craeting temp discount graphql request',
+      err: 'On creating temp discount graphql request',
       msg: e
     })
     return null
@@ -368,7 +369,7 @@ export const createNewTempDiscount = async (shopifyTempDiscount) => {
 }
 
 export const updateTempDiscountById = async (shopifyTempDiscountId, shopifyTempDiscount) => {
-  const databaseSession = await prisma.session.findFirst()
+  const databaseSession = await getShop()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
   try {
@@ -421,7 +422,7 @@ export const updateTempDiscountById = async (shopifyTempDiscountId, shopifyTempD
     }
   } catch(e) {
     console.error({
-      err: 'On craeting temp discount graphql request',
+      err: 'On updating temp discount graphql request',
       msg: e
     })
     return null
