@@ -31,12 +31,16 @@ export const createTempDiscount = async (body) => {
     }
 
     const UI_discountCode = await getDiscountCodeFromDB(body.addedCode)
-    if(!UI_discountCode) {
+    if(!UI_discountCode || !UI_discountCode.enabled) {
       throw {
         type: 'InexistentDiscountCode',
       }
     }
-
+    if(!UI_discountCode.enabled) {
+      throw {
+        type: 'DiscountCodeNotAllowed',
+      }
+    }
     const newPricesForProducts = await calculatePricesForProducts(
       UI_discountCode.stackDiscounts,
       body.cartProducts
@@ -114,6 +118,23 @@ export const createTempDiscount = async (body) => {
             },
             {
               status: 400,
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          break;
+        case 'DiscountCodeNotAllowed':
+          return json(
+            {
+              body: {
+                data: {
+                  err: 'DiscountCode not Allowed'
+                }
+              }
+            },
+            {
+              status: 404,
               headers: {
                 "Content-Type": "application/json",
               },
