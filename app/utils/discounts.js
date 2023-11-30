@@ -43,13 +43,33 @@ export const checkIfProductBelongsToPriceRule = (productDetails, priceRule) => {
   )
 }
 
-export const getDiscountCodeFromDB = async (code) => {
+/* export const getDiscountCodeFromDB = async (code) => {
   return await prisma.discountCode.findFirst({
     where: {
       code: code
     }
   })
-}
+} */
+export const getDiscountCodeFromDB = async (code) => {
+  const discountCode = await prisma.discountCode.findFirst({
+    where: {
+      OR: [
+        {
+          code: {
+            startsWith: code,
+          },
+        },
+        {
+          code: {
+            startsWith: code.substring(0, code.length - 1),
+          },
+        },
+      ],
+    },
+  });
+
+  return discountCode;
+};
 
 export const getTempDiscountCodeFromDB = async (code) => {
   return await prisma.tempDiscountCode.findFirst({
