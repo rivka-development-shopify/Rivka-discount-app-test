@@ -1,5 +1,5 @@
 import shopify, { authenticate, sessionStorage } from "../shopify.server";
-import { getDatabaseSession } from '../utils/session'
+import { getDatabaseSession } from '../models/session'
 
 export const getProductsDetails = async (products) => {
   const databaseSession = await getDatabaseSession()

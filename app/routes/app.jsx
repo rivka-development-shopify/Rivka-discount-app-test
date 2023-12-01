@@ -13,7 +13,6 @@ export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export async function loader({ request, params }) {
   await authenticate.admin(request);
-  console.log('params', params)
   const url = new URL(request.url);
 
   return json({

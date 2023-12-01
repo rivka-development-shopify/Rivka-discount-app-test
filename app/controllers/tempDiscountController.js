@@ -14,7 +14,7 @@ import {
   calculatePricesForProducts,
   getDiscountCodeFromDB,
   getTempDiscountCodeFromDB
-} from '../utils/discounts'
+} from '../models/discounts'
 
 import { validateAuthKeyParam } from '../utils/publicAuthKey'
 
@@ -31,7 +31,7 @@ export const createTempDiscount = async (body) => {
     }
 
     const UI_discountCode = await getDiscountCodeFromDB(body.addedCode)
-    if(!UI_discountCode || !UI_discountCode.enabled) {
+    if(!UI_discountCode) {
       throw {
         type: 'InexistentDiscountCode',
       }

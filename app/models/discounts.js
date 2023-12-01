@@ -47,11 +47,68 @@ export const checkIfProductBelongsToPriceRule = (productDetails, priceRule) => {
 }
 
 export const getDiscountCodeFromDB = async (code) => {
+  // Try to find an exact match
+  const exactMatch = await prisma.discountCode.findFirst({
+    where: {
+      code: code,
+    },
+  });
+
+  // If no exact match, check for wildcard match
+  const wildcardMatches = await prisma.discountCode.findMany({
+    where: {
+      code: {
+        endsWith: "#",
+      },
+    },
+  });
+
+  const wildcardMatch = wildcardMatches.find(discount => code.includes(discount.code.substring(0, discount.code.length - 1)));
+  if (wildcardMatch) {
+    const wildcardPrefix = wildcardMatch.code.substring(0, wildcardMatch.code.length - 1);
+    if (code.startsWith(wildcardPrefix)) {
+      wildcardMatch.code = wildcardMatch.code.replace('#', "*");
+      return wildcardMatch;
+    }
+  }
+
+  return null;
+};
+
+export const updateDiscountCodeFromDB = async (discountCode) => {
+  return await prisma.$transaction([
+    prisma.discountCode.update({
+      where: {
+        id: discountCode.discountCodeId
+      },
+      data: {
+        stackDiscounts: {
+          set: [],
+        }
+      }
+    }),
+    prisma.discountCode.update({
+      where: {
+        id: discountCode.discountCodeId
+      },
+      data: {
+        code: discountCode.discountCode,
+        stackDiscounts: discountCode.stackDiscounts,
+      }
+    })
+  ])
+}
+
+export const getDiscountCodeByIdFromDB = async (discountCodeId) => {
   return await prisma.discountCode.findFirst({
     where: {
-      code: code
+      id: discountCodeId
     }
   })
+}
+
+export const getAllDiscountCodesFromDB = async () => {
+  return await prisma.discountCode.findMany()
 }
 
 export const getTempDiscountCodeFromDB = async (code) => {
@@ -124,5 +181,8 @@ export default {
   getStackDiscountId,
   checkIfProductBelongsToPriceRule,
   getDiscountCodeFromDB,
-  getProductDiscountedPrices
+  getProductDiscountedPrices,
+  updateDiscountCodeFromDB,
+  getDiscountCodeByIdFromDB,
+  getAllDiscountCodesFromDB
 }

@@ -11,28 +11,23 @@ import JavaScriptObfuscator from 'javascript-obfuscator';
 // WILL THIS WORK IN PRODUCTION? -> NO
 const getBundleMinFile = async () => {
   try {
-
-    const cwd = process.cwd();
-    let bundlePath = `${cwd}/app/assets/bundle.js`;
-    if(process.env.NODE_ENV !== 'production') {
-      bundlePath = new URL(`${cwd}/app/assets/bundle.js`).pathname;
+  const cwd = process.cwd();
+  let bundlePath = `${cwd}/app/assets/bundle.js`;
+  const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
+  const bundle = rawBundle
+  const { code } = UglifyJS.minify(bundle)
+  const bundleMin = JavaScriptObfuscator.obfuscate(
+    code, {
+        compact: false,
+        controlFlowFlattening: true,
+        controlFlowFlatteningThreshold: 1,
+        numbersToExpressions: true,
+        simplify: true,
+        stringArrayShuffle: true,
+        splitStrings: true,
+        stringArrayThreshold: 1
     }
-
-    const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
-    const bundle = rawBundle
-    const { code } = UglifyJS.minify(bundle)
-    const bundleMin = JavaScriptObfuscator.obfuscate(
-      code, {
-          compact: false,
-          controlFlowFlattening: true,
-          controlFlowFlatteningThreshold: 1,
-          numbersToExpressions: true,
-          simplify: true,
-          stringArrayShuffle: true,
-          splitStrings: true,
-          stringArrayThreshold: 1
-      }
-    );
+  )    
     return bundleMin.getObfuscatedCode()
   } catch(e) {
     return null
@@ -53,7 +48,7 @@ export async function loader({ request }) {
         'Content-Type': 'application/javascript',
       },
     });
-  } catch(e) {
+  } catch(e) { 
     if(e.type) {
       switch(e.type){
         case 'IncorrectAuthKey':

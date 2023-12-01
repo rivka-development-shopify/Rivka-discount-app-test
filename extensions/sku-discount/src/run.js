@@ -41,8 +41,6 @@ export function run(input) {
   const { collectionsToApplyIds, collectionsToIgnoreIds } = configuration;
 
   const validateDiscount = (lines, { collectionsToApply, collectionsToIgnore }) => {
-    collectionsToApply.forEach(collection => console.log('Apply', collection.id))
-    collectionsToIgnore.forEach(collection => console.log('Ignore', collection.id))
     const result = lines.filter((line) => {
       const variant = /** @type {ProductVariant} */ (line.merchandise);
       /* Logic to validate SALE25 like Code */

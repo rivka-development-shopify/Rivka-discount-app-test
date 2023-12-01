@@ -203,7 +203,7 @@ export default function Index() {
   }
 
   const errorBanner =
-    (submitError || loadError || error) ? (
+    (submitError || loadError || error !== '') ? (
       <Layout.Section>
         <Banner status="critical">
           <p>There were some issues with your form:</p>
