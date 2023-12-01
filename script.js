@@ -1,5 +1,5 @@
 fetch(
-  `https://rivkacustomdiscounts.tech/api/delete_expired_temporary_discount?publicAuthKey=24b0ej97yu0cjkovcp356z8snvj0g1w8`,
+  `https://rivkacustomdiscounts.tech/api/delete_expired_temporary_discount?publicAuthKey=uvldk4w973b29o4h6uzqjjgej981nntc`,
   {
     method: "DELETE",
     headers: {}
