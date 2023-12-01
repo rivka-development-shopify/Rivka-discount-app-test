@@ -5,7 +5,9 @@ import {
   LegacyStack,
   Tag,
   Listbox,
-  FormLayout
+  FormLayout,
+  Banner,
+  Badge
 } from '@shopify/polaris'
 
 import {SearchMinor} from '@shopify/polaris-icons';
@@ -19,7 +21,8 @@ import React, {
 function DiscountSelector({
     options: discountOptions,
     value: selectedDiscounts,
-    onChange
+    onChange,
+    setError
   }) {
 
   const [stackDiscountInputValue, setStackDiscountInputValue] = useState('');
@@ -91,12 +94,22 @@ function DiscountSelector({
   );
 
   const tagsMarkup = selectedStackDiscounts.map((discount) => {
-
-    return (
-      <Tag key={`discount-${discount}`} onRemove={removeTag(discount)}>
-        {discountOptions.find(shopifyDiscount => shopifyDiscount.id === discount).title}
-      </Tag>
-    )
+    const discountTitle = discountOptions.find(shopifyDiscount => shopifyDiscount.id === discount)?.title ?? null
+    if(discountTitle) {
+      return (
+        <Tag key={`discount-${discount}`} onRemove={removeTag(discount)}>
+          {discountTitle}
+        </Tag>
+      )
+    }
+    else {
+      setError('One or more of selected disocunts does not exists anymore')
+      return (
+        <Tag key={`discount-${discount}`} onRemove={removeTag(discount)}>
+          {discount.replace('gid://shopify/DiscountCodeNode/', '!! Discount ID: ')}
+        </Tag>
+      )
+    }
   });
 
   return (

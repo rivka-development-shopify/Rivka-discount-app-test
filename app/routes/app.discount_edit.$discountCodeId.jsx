@@ -16,7 +16,10 @@ import {
   TextField,
   FormLayout,
   InlineError,
-  FooterHelp
+  FooterHelp,
+  Banner,
+  Layout,
+  LegacyStack
 } from "@shopify/polaris";
 
 
@@ -34,133 +37,103 @@ import DiscountSelector from "~/components/DiscountSelector";
 
 // this is the method "get"
 export const loader = async ({ request, params }) => {
-  const { session } = await authenticate.admin(request);
-  const { admin } = await shopify.authenticate.admin(request);
-  const discountCode = await getDiscountCodeById(params.discountCodeId);
+  try {
+    const { session } = await authenticate.admin(request);
+    const { admin } = await shopify.authenticate.admin(request);
+    const discountCode = await getDiscountCodeById(params.discountCodeId);
 
-  const response = await admin.graphql(
-    `#graphql
-      query {
-        discountNodes(first: 100) {
-          edges {
-            node {
-              id
-              discount {
-                ... on DiscountCodeFreeShipping {
-                  title
-                  status
-                  codes(first: 5) {
-                    edges {
-                      node {
-                        code
+    const response = await admin.graphql(
+      `#graphql
+        query {
+          discountNodes(first: 100) {
+            edges {
+              node {
+                id
+                discount {
+                  ... on DiscountCodeFreeShipping {
+                    title
+                    status
+                    codes(first: 5) {
+                      edges {
+                        node {
+                          code
+                        }
                       }
                     }
                   }
-                }
-                ... on DiscountCodeBxgy {
-                  title
-                  status
-                  codes(first: 5) {
-                    edges {
-                      node {
-                        code
+                  ... on DiscountCodeBxgy {
+                    title
+                    status
+                    codes(first: 5) {
+                      edges {
+                        node {
+                          code
+                        }
                       }
                     }
                   }
-                }
-                ... on DiscountCodeBasic {
-                  title
-                  status
-                  codes(first: 5) {
-                    edges {
-                      node {
-                        code
+                  ... on DiscountCodeBasic {
+                    title
+                    status
+                    codes(first: 5) {
+                      edges {
+                        node {
+                          code
+                        }
                       }
                     }
                   }
-                }
-                ... on DiscountCodeApp {
-                  title
-                  status
-                  codes(first: 5) {
-                    edges {
-                      node {
-                        code
+                  ... on DiscountCodeApp {
+                    title
+                    status
+                    codes(first: 5) {
+                      edges {
+                        node {
+                          code
+                        }
                       }
                     }
                   }
-                }
-                ... on DiscountAutomaticBxgy {
-                  title
-                  status
-                }
-                ... on DiscountAutomaticBasic {
-                  title
-                  status
-                }
-                ... on DiscountAutomaticApp {
-                  title
-                  status
+                  ... on DiscountAutomaticBxgy {
+                    title
+                    status
+                  }
+                  ... on DiscountAutomaticBasic {
+                    title
+                    status
+                  }
+                  ... on DiscountAutomaticApp {
+                    title
+                    status
+                  }
                 }
               }
             }
           }
         }
-      }
-    `,
-  );
+      `,
+    );
 
-  const rawShopifyCurrentDiscounts = await response.json();
+    const rawShopifyCurrentDiscounts = await response.json();
 
-  const shopifyCurrentDiscounts = rawShopifyCurrentDiscounts.data.discountNodes.edges.map(
-    edge => {
+    const shopifyCurrentDiscounts = rawShopifyCurrentDiscounts.data.discountNodes.edges.map(
+      ({node}) => ({
+        id: node.id,
+        title: node.discount?.title ?? '',
+        status: node.discount?.status ?? 'EXPIRED',
+        codes: node.discount?.codes?.edges.map(edge => edge.node?.code ?? '') ?? []
+      })
+    ).filter(discount => discount.status !== 'EXPIRED').filter(discount => !discount.id.includes('Automatic'));
 
-      let discount = edge.node.discount
-      if (edge.node.discount) {
-        let title = ''
-        let status = 'EXPIRED'
-        let codes = []
-
-        if (discount.title) {
-          title = discount.title
-        }
-        if (discount.status) {
-          status = discount.status
-        }
-        if (discount.codes) {
-          codes = discount.codes?.edges.map(edge => {
-            if (edge.node) {
-              if(edge.node.code) {
-                return edge.node.code
-              }
-            }
-            return ''
-          })
-        }
-
-        return {
-          id: edge.node.id,
-          title: title,
-          status: status,
-          codes: codes,
-        }
-      } else {
-        return {
-          id: edge.node.id,
-          title: '',
-          status: 'EXPIRED',
-          codes: edge.node.discount.codes ? edge.node.discount.codes?.edges.map(edge => edge.node?.code || '') : []
-        }
-      }
-    }
-  ).filter(discount => discount.status !== 'EXPIRED').filter(discount => !discount.id.includes('Automatic'));
-
-  return json({ shop: session.shop.replace(".myshopify.com", ""), discountCode, shopifyCurrentDiscounts, discountCodeId: params.discountCodeId });
+    return json({ shop: session.shop.replace(".myshopify.com", ""), discountCode, shopifyCurrentDiscounts, discountCodeId: params.discountCodeId });
+  } catch(e) {
+    return json({ error: 'Unable to retrieve stack discount', e});
+  }
 };
 
 
 // every time the submit fuction runs ends up here
-export async function action({ request  }) {
+export async function action({ request, params }) {
   try {
     // easier to work with JSON better then to work with FormData object
     const body = parseFormDataToJson(await request.formData())
@@ -171,19 +144,21 @@ export async function action({ request  }) {
         break;
     }
 
-    return { discountCode: await getDiscountCodeById() };
+    return { discountCode: await getDiscountCodeById(params.discountCodeId) };
   } catch (e) {
     console.error({ msg: "Error on remix landing page action", err: e})
-    return null
+    return { discountCode: await getDiscountCodeById(), error: 'Unable to update stack discount' }
   }
 }
 
 export default function Index() {
   const submit = useSubmit();
   const actionData = useActionData();
-  const { discountCode: loaderDiscount, shopifyCurrentDiscounts, discountCodeId } = useLoaderData();
+  const { discountCode: loaderDiscount, shopifyCurrentDiscounts, discountCodeId, error: loadErrorMessage } = useLoaderData();
   const [formModified, setFormModified] = useState(false)
-
+  const loadError = loadErrorMessage ?? null;
+  const submitError = actionData?.error ?? null;
+  const [error, setError] = useState('')
   const [discountCode, setDiscountCode] = useState(loaderDiscount != null? loaderDiscount.code : '')
   const [selectedDiscounts, setSelectedDiscount] = useState(loaderDiscount != null? loaderDiscount.stackDiscounts : [])
 
@@ -193,6 +168,7 @@ export default function Index() {
       setDiscountCode(actionData.discountCode.code);
       setSelectedDiscount(actionData.discountCode.stackDiscounts)
       setFormModified(false)
+      setError('')
     }
   },
   [actionData])
@@ -205,9 +181,6 @@ export default function Index() {
     }
   },
   [loaderDiscount])
-
-
-
 
   const handleDiscountCodeChange = (value) => {
     setFormModified(true);
@@ -228,38 +201,60 @@ export default function Index() {
       })
     }, {method: 'PUT'})
   }
+
+  const errorBanner =
+    (submitError || loadError || error) ? (
+      <Layout.Section>
+        <Banner status="critical">
+          <p>There were some issues with your form:</p>
+          <ul>
+            {submitError && <li>{submitError}</li>}
+            {loadError && <li>{loadError}</li>}
+            {error && <li>{error}</li>}
+          </ul>
+        </Banner>
+      </Layout.Section>
+    ) : null;
+
   return (
     <Page
       divider={false}
       fullWidth={false}
       primaryAction={{content: "Save Changes", onAction: () => {handleFormSubmit()}, disabled: !formModified  }}
+
     >
       {/* //ADD A SHOPIFY POLARIS SAVE BAR EVERYTIME discountCodeS STATE IS DIFFERENT FROM ORIGINAL discountCodeS */}
-      <div className="discount-form">
-        <LegacyCard title="Edit your custom discount code" sectioned>
-          <FormLayout>
-            {
-              loaderDiscount == null &&
-                <InlineError message="There's no Custom Discount Code with this ID" fieldID={""}/>
-            }
+      <Layout sectioned>
+        {errorBanner}
+        <Layout.Section>
+          <div className="discount-form">
+            <LegacyCard title="Edit your custom discount code" sectioned>
+              <FormLayout>
+                {
+                  loaderDiscount == null &&
+                    <InlineError message="There's no Custom Discount Code with this ID" fieldID={""}/>
+                }
 
-            <TextField
-              label="Discount Code"
-              value={discountCode}
-              onChange={handleDiscountCodeChange}
-              autoComplete="off"
-              disabled={loaderDiscount == null}
-            />
+                <TextField
+                  label="Discount Code"
+                  value={discountCode}
+                  onChange={handleDiscountCodeChange}
+                  autoComplete="off"
+                  disabled={loaderDiscount == null}
+                />
 
-            <DiscountSelector
-              options={shopifyCurrentDiscounts ? shopifyCurrentDiscounts : []}
-              value={selectedDiscounts}
-              onChange={(newValue) => { handleDiscountSelectorChange(newValue)}}
-            />
-          </FormLayout>
-        </LegacyCard>
-      </div>
-      <FooterHelp></FooterHelp>
+                <DiscountSelector
+                  options={shopifyCurrentDiscounts ? shopifyCurrentDiscounts : []}
+                  value={selectedDiscounts}
+                  onChange={(newValue) => { handleDiscountSelectorChange(newValue)}}
+                  setError={setError}
+                />
+              </FormLayout>
+            </LegacyCard>
+          </div>
+          <FooterHelp></FooterHelp>
+        </Layout.Section>
+      </Layout>
     </Page>
   );
 }
