@@ -206,7 +206,7 @@ export const updateTempDiscount = async (body) => {
     const newTempDiscountInfo = await updateTempDiscountById(
       tempDiscountCode.shopify_id,
       {
-        code: totalDiscounted,
+        code: tempDiscountCode.code,
         amount: totalDiscounted,
         minimumRequirement: originalTotal,
         startsAt: new Date,

@@ -396,15 +396,15 @@ export const updateTempDiscountById = async (shopifyTempDiscountId, shopifyTempD
                   "appliesOnEachItem": false
                 }
               }
-            }
+            },
+            "minimumRequirement": {
+              "subtotal": {
+                "greaterThanOrEqualToSubtotal": shopifyTempDiscount.minimumRequirement
+              }
+            },
+            "startsAt": shopifyTempDiscount.startsAt,
+            "endsAt": shopifyTempDiscount.endsAt
           },
-          "minimumRequirement": {
-            "subtotal": {
-              "greaterThanOrEqualToSubtotal": shopifyTempDiscount.minimumRequirement
-            }
-          },
-          "startsAt": shopifyTempDiscount.startsAt,
-          "endsAt": shopifyTempDiscount.endsAt
         }
       }
     )
