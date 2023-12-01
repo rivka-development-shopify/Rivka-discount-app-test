@@ -1,8 +1,8 @@
 import shopify, { authenticate, sessionStorage } from "../shopify.server";
-import { getShop } from '../utils/session'
+import { getDatabaseSession } from '../utils/session'
 
 export const getProductsDetails = async (products) => {
-  const databaseSession = await getShop()
+  const databaseSession = await getDatabaseSession()
   const { storefront } = await shopify.unauthenticated.storefront(databaseSession.shop)
 
   return Promise.all(
@@ -61,7 +61,7 @@ export const getProductsDetails = async (products) => {
 }
 
 export const getDiscountsRulesByIds = async (stackDiscounts) => {
-  const databaseSession = await getShop()
+  const databaseSession = await getDatabaseSession()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
   return Promise.all(
@@ -253,7 +253,7 @@ export const getDiscountsRulesByIds = async (stackDiscounts) => {
 }
 
 export const deleteTempDiscountById = async (shopifyTempDiscountId) => {
-  const databaseSession = await getShop()
+  const databaseSession = await getDatabaseSession()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
   try {
@@ -294,7 +294,7 @@ export const deleteTempDiscountById = async (shopifyTempDiscountId) => {
 }
 
 export const createNewTempDiscount = async (shopifyTempDiscount) => {
-  const databaseSession = await getShop()
+  const databaseSession = await getDatabaseSession()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
   try {
@@ -369,7 +369,7 @@ export const createNewTempDiscount = async (shopifyTempDiscount) => {
 }
 
 export const updateTempDiscountById = async (shopifyTempDiscountId, shopifyTempDiscount) => {
-  const databaseSession = await getShop()
+  const databaseSession = await getDatabaseSession()
   const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
 
   try {
