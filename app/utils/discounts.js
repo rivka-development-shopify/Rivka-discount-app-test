@@ -16,7 +16,10 @@ export const checkIfProductBelongsToPriceRule = (productDetails, priceRule) => {
     if(productDetails.collections.includes(collection.id)) {
       if(collection.useMetafield) {
         if(
-          `${productDetails.variant.metafield_twc_sale_item === 'true' ? true : false}`
+          `${(
+            productDetails.variant.metafield_twc_sale_item &&
+            productDetails.variant.metafield_twc_sale_item === 'true'
+            ) ? true : false}`
           !==
           `${collection.metafiledValue}`
         ) {
@@ -43,33 +46,77 @@ export const checkIfProductBelongsToPriceRule = (productDetails, priceRule) => {
   )
 }
 
-/* export const getDiscountCodeFromDB = async (code) => {
-  return await prisma.discountCode.findFirst({
-    where: {
-      code: code
-    }
-  })
-} */
 export const getDiscountCodeFromDB = async (code) => {
-  const discountCode = await prisma.discountCode.findFirst({
+  // Try to find an exact match
+  const exactMatch = await prisma.discountCode.findFirst({
     where: {
-      OR: [
-        {
-          code: {
-            startsWith: code,
-          },
-        },
-        {
-          code: {
-            startsWith: code.substring(0, code.length - 1),
-          },
-        },
-      ],
+      code: code,
     },
   });
 
-  return discountCode;
+  if (exactMatch) {
+    console.log('EM', exactMatch)
+    return exactMatch;
+  }
+
+  // If no exact match, check for wildcard match
+  const wildcardMatches = await prisma.discountCode.findMany({
+    where: {
+      code: {
+        endsWith: "#", 
+      },
+    },
+  });
+
+  const wildcardMatch = wildcardMatches.find(discount => code.includes(discount.code.substring(0, discount.code.length - 1)));
+  if (wildcardMatch) {
+    console.log('WM', wildcardMatch)
+    const wildcardPrefix = wildcardMatch.code.substring(0, wildcardMatch.code.length - 1);
+    if (code.startsWith(wildcardPrefix)) {
+      const modifiedCode = wildcardMatch.code.replace('#', "*");
+      wildcardMatch.code = modifiedCode;
+      return wildcardMatch;
+    }
+  }
+
+  return null;
 };
+
+export const updateDiscountCodeFromDB = async (discountCode) => {
+  return await prisma.$transaction([
+    prisma.discountCode.update({
+      where: {
+        id: discountCode.discountCodeId
+      },
+      data: {
+        stackDiscounts: {
+          set: [],
+        }
+      }
+    }),
+    prisma.discountCode.update({
+      where: {
+        id: discountCode.discountCodeId
+      },
+      data: {
+        code: discountCode.discountCode,
+        stackDiscounts: discountCode.stackDiscounts,
+      }
+    })
+  ])
+}
+
+export const getDiscountCodeByIdFromDB = async (discountCodeId) => {
+  return await prisma.discountCode.findFirst({
+    where: {
+      id: discountCodeId 
+    }
+  })
+}
+
+export const getAllDiscountCodesFromDB = async () => {
+  return await prisma.discountCode.findMany()
+}
 
 export const getTempDiscountCodeFromDB = async (code) => {
   return await prisma.tempDiscountCode.findFirst({
@@ -98,9 +145,9 @@ export const getProductDiscountedPrices = (productsDetails, stackedPriceRules) =
     return {
       productId: productDetails.id,
       productVariantId: productDetails.variant.id,
-      price: productDetails.variant.price.amount * 1.0,
-      discountedPrice: productDetails.variant.price.amount - productDetails.variant.price.amount * percentage,
-      discountApplied: productDetails.variant.price.amount * percentage,
+      price: productDetails.variant.price.amount * 1.0 * productDetails.quantity,
+      discountedPrice: (productDetails.variant.price.amount - (productDetails.variant.price.amount * percentage)) * productDetails.quantity,
+      discountApplied: (productDetails.variant.price.amount * percentage) * productDetails.quantity,
       percentageApplied: percentage,
       discountsApplied: discountsApplied.map(discount => discount.title)
     }
@@ -112,6 +159,7 @@ export const calculatePricesForProducts = async (stackedDiscounts, cartProducts)
   const stackedPriceRules = await getDiscountsRulesByIds(stackedDiscounts)
 
   const productsDetails = await getProductsDetails(cartProducts)
+
 
   if(productsDetails && stackedPriceRules) {
     const productDiscountedPrices = getProductDiscountedPrices(productsDetails, stackedPriceRules)
@@ -140,5 +188,8 @@ export default {
   getStackDiscountId,
   checkIfProductBelongsToPriceRule,
   getDiscountCodeFromDB,
-  getProductDiscountedPrices
+  getProductDiscountedPrices,
+  updateDiscountCodeFromDB,
+  getDiscountCodeByIdFromDB,
+  getAllDiscountCodesFromDB
 }

@@ -8,8 +8,9 @@ import JavaScriptObfuscator from 'javascript-obfuscator';
 
 
 
-// WILL THIS WORK IN PRODUCTION?
+// WILL THIS WORK IN PRODUCTION? -> NO
 const getBundleMinFile = async () => {
+  try {
   const cwd = process.cwd();
   let bundlePath = `${cwd}/app/assets/bundle.js`;
   const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
@@ -26,25 +27,28 @@ const getBundleMinFile = async () => {
         splitStrings: true,
         stringArrayThreshold: 1
     }
-  );
-  return bundleMin.getObfuscatedCode()
+  )    
+    return bundleMin.getObfuscatedCode()
+  } catch(e) {
+    return null
+  }
 }
 
 export async function loader({ request }) {
-  try {
 
+  try {
     if(!validateAuthKeyParam(request.url)) {
-      throw {
-        type: 'IncorrectAuthKey'
+        throw {
+          type: 'IncorrectAuthKey'
+        }
       }
-    }
 
     return new Response(await getBundleMinFile(), {
       headers: {
         'Content-Type': 'application/javascript',
       },
     });
-  } catch(e) {
+  } catch(e) { 
     if(e.type) {
       switch(e.type){
         case 'IncorrectAuthKey':

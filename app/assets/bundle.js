@@ -14,7 +14,8 @@ const parseCartData = (rawCartData) => {
     item => {
       return {
         productId: `gid://shopify/Product/${item.product_id}`,
-        productVariantId: `gid://shopify/ProductVariant/${item.id}`
+        productVariantId: `gid://shopify/ProductVariant/${item.id}`,
+        quantity: item.quantity
       }
     }
   ) ?? [];
@@ -84,11 +85,11 @@ const applyAndSave = async (listDiscountsData, cartData) => {
         productDiscountedPrices,
         newTempDiscountInfo
       })
-      localStorage.setItem('rivka-discount-applied', JSON.stringify({
+      await localStorage.setItem('rivka-discount-applied', JSON.stringify({
         productDiscountedPrices,
         newTempDiscountInfo
       }));
-      localStorage.setItem('openCart', true);
+      await localStorage.setItem('openCart', true);
     }
   } else {
     console.error('listDiscountsData undefined')
@@ -155,8 +156,12 @@ const createForm = () => {
   input.id = 'rivka-app-discount-code-input'
   button.id = 'rivka-app-discount-code-submit'
 
-  button.onclick = handleApplyDiscount
-  button.appendChild(document.createTextNode('GO!'))
+  button.onclick = (e) => {
+    e.preventDefault()
+    handleApplyDiscount()
+  }
+  button.appendChild(document.createTextNode('Apply!'))
+  input.placeholder = 'Ex: 12345678...'
   div.appendChild(input)
   div.appendChild(button)
 }
@@ -183,3 +188,5 @@ if(localStorage.getItem('openCart')) {
   document.querySelector('cart-drawer').classList.add('animate', 'active')
   localStorage.setItem('openCart', false)
 }
+
+console.log('Custom Discounts (Rivka): Loaded')

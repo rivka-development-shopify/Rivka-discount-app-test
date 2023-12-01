@@ -1,8 +1,8 @@
 {
-  "name": "discount-app-test-1",
+  "name": "custom-discounts-rivka",
   "private": true,
   "scripts": {
-    "build": "NODE_ENV=production remix build",
+    "build": "NODE_ENV=production && remix build",
     "predev": "prisma generate && prisma db push",
     "dev": "shopify app dev",
     "ngrok-dev": "npm run dev -- --tunnel-url https://7af0-38-51-159-27.ngrok-free.app:36219",
@@ -13,6 +13,7 @@
     "config:use": "shopify app config use",
     "env": "shopify app env",
     "start": "remix-serve build",
+    "docker-start": "prisma generate && prisma db push && npm run start",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "shopify": "shopify",
     "prisma": "prisma",

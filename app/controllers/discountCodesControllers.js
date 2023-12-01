@@ -1,4 +1,6 @@
 import prisma from "~/db.server";
+import { getAllDiscountCodesFromDB, getDiscountCodeByIdFromDB, updateDiscountCodeFromDB } from "~/utils/discounts";
+
 // import { Product } from "@prisma/client";
 /**
  *
@@ -40,28 +42,10 @@ export async function createNewDiscountCode(requestArgs) {
 export async function updateDiscountCode(discountCode) {
   // updates a discount code by id
   // requires extention
+  
+  discountCode.discountCode = discountCode.discountCode.replace("*", "#")
   try {
-    const response = await prisma.$transaction([
-      prisma.discountCode.update({
-        where: {
-          id: discountCode.discountCodeId
-        },
-        data: {
-          stackDiscounts: {
-            set: [],
-          }
-        }
-      }),
-      prisma.discountCode.update({
-        where: {
-          id: discountCode.discountCodeId
-        },
-        data: {
-          code: discountCode.discountCode,
-          stackDiscounts: discountCode.stackDiscounts,
-        }
-      })
-    ])
+    const response = await updateDiscountCodeFromDB(discountCode)
     return response;
 
   } catch (e) {
@@ -93,7 +77,11 @@ export async function getAllDiscountCodes() {
   // returns all discount codes in the db
   // only db
   try {
-    return await prisma.discountCode.findMany()
+    return (await getAllDiscountCodesFromDB()).map(discount => {
+      const modifiedCode = discount.code.replace('#', "*");
+      discount.code = modifiedCode;
+      return discount
+    })
   } catch (e) {
     console.error({msg: 'Error getting discount codes from database', err: e})
     return null;
@@ -104,11 +92,9 @@ export async function getDiscountCodeById(discountCodeId) {
   // returns a discount code in the db with the given id
   // only db
   try {
-    const discountCode = await prisma.discountCode.findFirst({
-      where: {
-        id: discountCodeId // theres a bug in here
-      }
-    })
+    const discountCode = await getDiscountCodeByIdFromDB(discountCodeId)
+    const modifiedCode = discountCode.code.replace('#', "*");
+    discountCode.code = modifiedCode;
     return discountCode
   } catch (e) {
     console.error({msg: 'Error getting discount codes from database', err: e})
