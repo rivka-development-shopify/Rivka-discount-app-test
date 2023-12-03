@@ -62,7 +62,7 @@ export const createTempDiscount = async (body) => {
       code: `TEMP-${body.addedCode}-${discountRandomKey}`,
       title: `TEMPORARY ${body.addedCode} DISCOUNT | ${discountRandomKey}`,
       amount: totalDiscounted,
-      minimumRequirement: originalTotal,
+      minQuantity: body.cartProducts.reduce((total, product) => (total + product.quantity), 0),
       startsAt: new Date,
       endsAt: new Date(new Date().getTime() + 86400000)
     })
@@ -208,7 +208,7 @@ export const updateTempDiscount = async (body) => {
       {
         code: tempDiscountCode.code,
         amount: totalDiscounted,
-        minimumRequirement: originalTotal,
+        minQuantity: body.cartProducts.reduce((total, product) => (total + product.quantity), 0),
         startsAt: new Date,
         endsAt: new Date(new Date().getTime() + 86400000)
       }

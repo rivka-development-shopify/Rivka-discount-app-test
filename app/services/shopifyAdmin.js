@@ -336,8 +336,8 @@ export const createNewTempDiscount = async (shopifyTempDiscount) => {
             },
             "endsAt": null,
             "minimumRequirement": {
-              "subtotal": {
-                "greaterThanOrEqualToSubtotal": shopifyTempDiscount.minimumRequirement
+              "quantity": {
+                "greaterThanOrEqualToQuantity": `${shopifyTempDiscount.minQuantity}`
               }
             },
             "startsAt": shopifyTempDiscount.startsAt,
@@ -397,9 +397,14 @@ export const updateTempDiscountById = async (shopifyTempDiscountId, shopifyTempD
                 }
               }
             },
+            "combinesWith": {
+              "orderDiscounts": true,
+              "productDiscounts": true,
+              "shippingDiscounts": true
+            },
             "minimumRequirement": {
-              "subtotal": {
-                "greaterThanOrEqualToSubtotal": shopifyTempDiscount.minimumRequirement
+              "quantity": {
+                "greaterThanOrEqualToQuantity": `${shopifyTempDiscount.minQuantity}`
               }
             },
             "startsAt": shopifyTempDiscount.startsAt,
