@@ -36,8 +36,8 @@ export function run(input) {
   );
   if (!configuration.percentage) {
     return EMPTY_DISCOUNT;
-  }
-
+  }  
+  
   const { collectionsToApplyIds, collectionsToIgnoreIds } = configuration;
 
   const validateDiscount = (lines, { collectionsToApply, collectionsToIgnore }) => {
@@ -48,7 +48,7 @@ export function run(input) {
         return variant.product.inCollections.map(({ collectionId, isMember }) => {
           const matchCollectionFullObject = collectionsToApply.find(collection => collection.id === collectionId);
           if (isMember) {
-            if("checkedState" in matchCollectionFullObject === false || (matchCollectionFullObject.checkedState === true && matchCollectionFullObject.radioState === true && variant.metafield?.value === "true")) {
+            if((matchCollectionFullObject.metafiledValue === null) || (matchCollectionFullObject.metafiledValue === true &&variant.metafield?.value === "true")) {
               return collectionsToApplyIds.indexOf(collectionId) > -1
             }
           }
@@ -60,10 +60,10 @@ export function run(input) {
           if(isMember && collectionsToIgnore.some(collection => collection.id === collectionId)) return false
 
           const matchCollectionFullObject = collectionsToApply.find(collection => collection.id === collectionId);
+          console.log('here', JSON.stringify(matchCollectionFullObject))
           if(
-            matchCollectionFullObject &&
-            matchCollectionFullObject.checkedState === true &&
-            matchCollectionFullObject.radioState === false &&
+            matchCollectionFullObject &&           
+            matchCollectionFullObject.metafiledValue === false &&
             variant.metafield?.value !== "true"
           ) return true
 
