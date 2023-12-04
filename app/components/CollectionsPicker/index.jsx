@@ -18,6 +18,7 @@ export default function CollectionsPicker (props) {
   const [selectedCollections, setSelectedCollections] = useState(props.value ?? []);
 
   useEffect(() => {
+    console.log(selectedCollections)
     props.onChange(selectedCollections)
   }, [selectedCollections])
 
@@ -68,20 +69,19 @@ export default function CollectionsPicker (props) {
   };
 
   const handleRadioChange = (value, collectionId) => {
-    setSelectedCollections(
-      oldSelectedCollections => {
-        const newSelectedCollections = [ ...oldSelectedCollections ];
-
-        const changedCollection = newSelectedCollections.find(
-          collection => collection.id === collectionId
-        )
-        if (changedCollection){
-          changedCollection.metafiledValue = value
-        }
-        return newSelectedCollections
+    setSelectedCollections(oldSelectedCollections => {
+      const newSelectedCollections = [...oldSelectedCollections];
+  
+      const changedCollection = newSelectedCollections.find(
+        collection => collection.id === collectionId
+      );
+      if (changedCollection) {
+        changedCollection.metafiledValue = value;
       }
-    )
+      return newSelectedCollections;
+    });
   };
+  
 
 
   return  (
@@ -123,31 +123,36 @@ export default function CollectionsPicker (props) {
                   <Text variant="bodyMd" fontWeight="bold" as="h3">
                     {collection.title}
                   </Text>
-                  <Checkbox
+                  {/* <Checkbox
                     label="TWC SALE Metafield usage"
                     checked={!!collection.useMetafield}
                     onChange={() => handleUseMetafieldChange(collection.id)}
-                  />
-                  {
-                    !!collection.useMetafield && (
-                      <LegacyStack>
-                        <RadioButton
-                          label="True"
-                          checked={collection.metafiledValue}
-                          id={`${collection.id}-true`}
-                          name={collection.title}
-                          onChange={() => handleRadioChange(true, collection.id)}
-                        />
-                        <RadioButton
-                            label="False"
-                            checked={!collection.metafiledValue}
-                            id={`${collection.id}-false`}
-                            name={collection.title}
-                            onChange={() => handleRadioChange(false, collection.id)}
-                        />
-                      </LegacyStack>
-                    )
-                  }
+                  /> */}
+                  <LegacyStack>
+                    <RadioButton
+                        label="All Variants"
+                        checked={collection.metafiledValue === null}
+                        id={`${collection.id}-all`}
+                        name={collection.title}
+                        onChange={() => handleRadioChange(null, collection.id)}
+                      />
+                    <RadioButton
+                      label="Sale Variants"
+                      checked={collection.metafiledValue === true}
+                      id={`${collection.id}-true`}
+                      name={collection.title}
+                      onChange={() => handleRadioChange(true, collection.id)}
+                    />
+                    <RadioButton
+                      label="Non-sale Variants"
+                      checked={collection.metafiledValue === false}
+                      id={`${collection.id}-false`}
+                      name={collection.title}
+                      onChange={() => handleRadioChange(false, collection.id)}
+                    />
+                    
+                  </LegacyStack>
+                  
                 </LegacyStack>
               </ResourceItem>
             );

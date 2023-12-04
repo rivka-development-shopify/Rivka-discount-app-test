@@ -60,7 +60,7 @@ export function run(input) {
           if(isMember && collectionsToIgnore.some(collection => collection.id === collectionId)) return false
 
           const matchCollectionFullObject = collectionsToApply.find(collection => collection.id === collectionId);
-          console.log('here', JSON.stringify(matchCollectionFullObject))
+          
           if(
             matchCollectionFullObject &&           
             matchCollectionFullObject.metafiledValue === false &&
@@ -118,4 +118,4 @@ export function run(input) {
     ],
     discountApplicationStrategy: DiscountApplicationStrategy.First
   };
-};
+}; 
