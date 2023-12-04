@@ -288,8 +288,8 @@ export default function VolumeNew() {
                     {...configuration.percentage}
                     suffix="%"
                   />
-                  <CollectionsPicker {...configuration.collectionsToApply} title="Collections to Apply" />
-                  <CollectionsPicker {...configuration.collectionsToIgnore} title="Collections to Ignore" />
+                  <CollectionsPicker {...configuration.collectionsToApply} title="Collections to Include" />
+                  <CollectionsPicker {...configuration.collectionsToIgnore} title="Collections to Exclude" />
                 </VerticalStack>
               </Card>
               {discountMethod.value === DiscountMethod.Code && (
