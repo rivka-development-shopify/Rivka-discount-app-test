@@ -17,8 +17,7 @@ export default function CollectionsPicker (props) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCollections, setSelectedCollections] = useState(props.value ?? []);
 
-  useEffect(() => {
-    console.log(selectedCollections)
+  useEffect(() => {    
     props.onChange(selectedCollections)
   }, [selectedCollections])
 
@@ -122,12 +121,7 @@ export default function CollectionsPicker (props) {
                 <LegacyStack vertical={true} alignment='baseline'>
                   <Text variant="bodyMd" fontWeight="bold" as="h3">
                     {collection.title}
-                  </Text>
-                  {/* <Checkbox
-                    label="TWC SALE Metafield usage"
-                    checked={!!collection.useMetafield}
-                    onChange={() => handleUseMetafieldChange(collection.id)}
-                  /> */}
+                  </Text>                  
                   <LegacyStack>
                     <RadioButton
                         label="All Variants"
