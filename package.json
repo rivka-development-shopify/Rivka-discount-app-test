@@ -5,7 +5,7 @@
     "build": "NODE_ENV=production && remix build",
     "predev": "prisma generate && prisma db push",
     "dev": "shopify app dev",
-    "ngrok-dev": "npm run dev -- --tunnel-url https://d8ab-181-31-154-153.ngrok-free.app:62132",
+    "ngrok-dev": "npm run dev -- --tunnel-url https://0fd5-38-51-156-60.ngrok-free.app:62132",
     "config:link": "shopify app config link",
     "config:push": "shopify app config push",
     "generate": "shopify app generate",
