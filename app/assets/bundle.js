@@ -139,7 +139,7 @@ const handleApplyDiscount = async (e) => {
   applyAndSave(listDiscountsData, cartData, e.target.id)
 }
 const updateCartDrawerUI = async (target, discountInfo) => {  
-  const totals = document.querySelector('.totals');
+  const discountAppInput = document.querySelector('#discount-app-input');
   const submitButton = document.getElementById(target);
   
   const div = document.createElement('div');
@@ -151,7 +151,7 @@ const updateCartDrawerUI = async (target, discountInfo) => {
   div.appendChild(span1);
   div.appendChild(span2);
   
-  await totals.insertAdjacentElement('afterend', div);
+  await discountAppInput.insertAdjacentElement('afterend', div);
   await submitButton.classList.remove('loading');
 }
 
