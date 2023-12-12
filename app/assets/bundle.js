@@ -1,5 +1,5 @@
 // @ts-nocheck
-const API_URL = 'https://0fd5-38-51-156-60.ngrok-free.app'
+const API_URL = 'https://rivkacustomdiscounts.tech'
 const retrieveCartData = async () => {
   return await $.ajax({
     type: 'GET',
