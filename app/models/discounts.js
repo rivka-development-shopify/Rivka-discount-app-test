@@ -54,6 +54,11 @@ export const getDiscountCodeFromDB = async (code) => {
     },
   });
 
+  // If an exact match is found, return it immediately
+  if (exactMatch) {
+    return exactMatch;
+  }
+  
   // If no exact match, check for wildcard match
   const wildcardMatches = await prisma.discountCode.findMany({
     where: {
