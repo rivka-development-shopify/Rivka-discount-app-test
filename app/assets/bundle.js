@@ -134,9 +134,9 @@ const handleApplyDiscount = async (e) => {
     })
   })
 
-  const listDiscountsData = await listDiscountsResponse.json()  
+  const listDiscountsData = await listDiscountsResponse.json();  
   
-  applyAndSave(listDiscountsData, cartData, e.target.id)
+  applyAndSave(listDiscountsData, cartData, e.target.id);
 }
 const updateCartDrawerUI = async (target, discountInfo) => {
   console.log('updateCartDrawerUI')  
