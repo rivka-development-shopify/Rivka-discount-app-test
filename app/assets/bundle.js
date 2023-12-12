@@ -138,7 +138,8 @@ const handleApplyDiscount = async (e) => {
   
   applyAndSave(listDiscountsData, cartData, e.target.id)
 }
-const updateCartDrawerUI = async (target, discountInfo) => {  
+const updateCartDrawerUI = async (target, discountInfo) => {
+  console.log('updateCartDrawerUI')  
   const discountAppInput = document.querySelector('#discount-app-input');
   const submitButton = document.getElementById(target);
   
@@ -201,6 +202,7 @@ if(localStorage.getItem('openCart')) {
 
 // Function to update the UI based on the localStorage data
 const updateUIFromLocalStorage = async () => {
+  console.log('updateUIFromLocalStorage')
   const cartData = await retrieveCartData()
   const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
   const discountInfo = await listDiscountsData?.newTempDiscountInfo;
