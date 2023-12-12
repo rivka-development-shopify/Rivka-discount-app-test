@@ -70,7 +70,7 @@ const updateCartPrices = (discountResponse) => {
   console.log(discountResponse)
 }
 
-const applyAndSave = async (listDiscountsData, cartData) => {
+const applyAndSave = async (listDiscountsData, cartData, target) => {
   if(
     (listDiscountsData?.body?.data?.newTempDiscountInfo ?? null)
     &&
@@ -89,7 +89,7 @@ const applyAndSave = async (listDiscountsData, cartData) => {
         productDiscountedPrices,
         newTempDiscountInfo
       }));
-      await localStorage.setItem('openCart', true);
+      await updateCartDrawerUI(target, newTempDiscountInfo);
     }
   } else {
     console.error('listDiscountsData undefined')
@@ -117,16 +117,14 @@ const handleUpdateDiscount = async () => {
 
   applyAndSave(listDiscountsData, cartData).then(
     () => {
-      setTimeout(() => {location.reload()}, 500)
+      setTimeout(() => {console.log("second", {listDiscountsData})}, 500)
     }
   )
 }
 
-const handleApplyDiscount = async (cookieDiscountCode = null) => {
-  const cartData = await retrieveCartData()
-
-  console.log(cartData)
-
+const handleApplyDiscount = async (e) => {
+  const cartData = await retrieveCartData()  
+  
   // fetch('https://b73f-181-31-154-153.ngrok-free.app/api/apply_discount')
   const listDiscountsResponse = await fetch(`${API_URL}/api/apply_temporary_discount`, {
     method: "POST",
@@ -136,15 +134,26 @@ const handleApplyDiscount = async (cookieDiscountCode = null) => {
     })
   })
 
-  const listDiscountsData = await listDiscountsResponse.json()
-
-  applyAndSave(listDiscountsData, cartData).then(
-    () => {
-      setTimeout(() => {location.reload()}, 500)
-    }
-  )
+  const listDiscountsData = await listDiscountsResponse.json()  
+  
+  applyAndSave(listDiscountsData, cartData, e.target.id)
 }
-
+const updateCartDrawerUI = async (target, discountInfo) => {  
+  const totals = document.querySelector('.totals');
+  const submitButton = document.getElementById(target);
+  
+  const div = document.createElement('div');
+  const span1 = document.createElement('span');
+  const span2 = document.createElement('span');
+  span1.innerText = "Discount applied";
+  span2.innerText = `$${discountInfo.amount}`;
+  div.classList.add('discount-applied');
+  div.appendChild(span1);
+  div.appendChild(span2);
+  
+  await totals.insertAdjacentElement('afterend', div);
+  await submitButton.classList.remove('loading');
+}
 
 const createForm = () => {
   // CREATING ELEMENTS
@@ -158,7 +167,8 @@ const createForm = () => {
 
   button.onclick = (e) => {
     e.preventDefault()
-    handleApplyDiscount()
+    e.target.classList.add('loading');
+    handleApplyDiscount(e)
   }
   button.appendChild(document.createTextNode('Apply!'))
   input.placeholder = 'Ex: 12345678...'
@@ -188,5 +198,29 @@ if(localStorage.getItem('openCart')) {
   document.querySelector('cart-drawer').classList.add('animate', 'active')
   localStorage.setItem('openCart', false)
 }
+
+// Function to update the UI based on the localStorage data
+const updateUIFromLocalStorage = async () => {
+  const cartData = await retrieveCartData()
+  const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
+  const discountInfo = await listDiscountsData?.newTempDiscountInfo;
+  if(cartData.total_discount === 0) {
+    const discountApplied = document.querySelector('.discount-applied');
+    return discountApplied?.remove(); 
+  }
+  if (discountInfo) {    
+    await updateCartDrawerUI('#rivka-app-discount-code-submit', discountInfo);    
+  }
+};
+
+// Update the UI when the page loads
+updateUIFromLocalStorage();
+
+// Update the UI when the localStorage changes
+window.addEventListener('storage', async (event) => {
+  if (event.key === 'rivka-discount-applied') {
+    await updateUIFromLocalStorage();
+  }
+});
 
 console.log('Custom Discounts (Rivka): Loaded')
