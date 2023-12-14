@@ -213,7 +213,7 @@ export const getDiscountsRulesByIds = async (stackDiscounts) => {
             }
             switch(grahqlDiscountNode.discount.customerGets.items.__typename) {
               case 'DiscountCollections':
-                discountNodeConfiguration.collectionsToApply = grahqlDiscountNode.discount.customerGets.items.collections.nodes.map(collection => collection.id)
+                discountNodeConfiguration.collectionsToApply = grahqlDiscountNode.discount.customerGets.items.collections.nodes.map(collection => ({id: collection.id}))
               break;
               case 'DiscountProducts':
                 discountNodeConfiguration.productVariantsToApply = grahqlDiscountNode.discount.customerGets.items.productVariants.nodes.map(variant => variant.id)
@@ -434,10 +434,37 @@ export const updateTempDiscountById = async (shopifyTempDiscountId, shopifyTempD
   }
 }
 
+export const checkForNativeDiscount = async (code) => {
+  const databaseSession = await getDatabaseSession()
+  const { admin } = await shopify.unauthenticated.admin(databaseSession.shop)
+
+  try {
+    const graphqlDiscountFormData = await admin.graphql(
+      `
+      query GetDiscount {
+        codeDiscountNodeByCode(code: "${code}") {
+          id
+        }
+      }
+      `
+    )
+    const { data: { codeDiscountNodeByCode } } = await graphqlDiscountFormData.json()
+
+    return codeDiscountNodeByCode?.id ?? null
+  } catch(e) {
+    console.error({
+      err: 'On creating checking native graphql request',
+      msg: e
+    })
+    return null
+  }
+}
+
 export default {
   getProductsDetails,
   getDiscountsRulesByIds,
   deleteTempDiscountById,
   createNewTempDiscount,
-  updateTempDiscountById
+  updateTempDiscountById,
+  checkForNativeDiscount
 }
