@@ -17,7 +17,7 @@ const getBundleMinFile = async () => {
   const bundle = rawBundle
   const { code } = UglifyJS.minify(bundle)
   const bundleMin = JavaScriptObfuscator.obfuscate(
-    code, {
+    bundle, {
         compact: false,
         controlFlowFlattening: true,
         controlFlowFlatteningThreshold: 1,
@@ -27,9 +27,13 @@ const getBundleMinFile = async () => {
         splitStrings: true,
         stringArrayThreshold: 1
     }
-  )    
-    return bundleMin.getObfuscatedCode()
+  )
+    return bundleMin
   } catch(e) {
+    console.error({
+      msg: "Error getting bundle min file",
+      err: e
+    })
     return null
   }
 }
@@ -48,7 +52,7 @@ export async function loader({ request }) {
         'Content-Type': 'application/javascript',
       },
     });
-  } catch(e) { 
+  } catch(e) {
     if(e.type) {
       switch(e.type){
         case 'IncorrectAuthKey':

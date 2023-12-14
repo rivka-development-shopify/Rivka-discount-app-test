@@ -1,5 +1,5 @@
 // @ts-nocheck
-const API_URL = 'https://rivkacustomdiscounts.tech'
+const API_URL = 'https://114c-181-31-154-153.ngrok-free.app'
 const retrieveCartData = async () => {
   return await $.ajax({
     type: 'GET',
@@ -121,11 +121,7 @@ const handleUpdateDiscount = async () => {
 
   const listDiscountsData = await listDiscountsResponse.json()
 
-  applyAndSave(listDiscountsData, cartData).then(
-    () => {
-      setTimeout(() => {console.log("126", {listDiscountsData})}, 500)
-    }
-  )
+  applyAndSave(listDiscountsData, cartData);
 }
 
 const handleApplyDiscount = async (e) => {
@@ -144,10 +140,6 @@ const handleApplyDiscount = async (e) => {
 
   applyAndSave(listDiscountsData, cartData, e.target.id);
 }
-const updateCartDrawerUI = async (target, discountInfo) => {
-  console.log('updateCartDrawerUI')
-  const discountAppInput = document.querySelector('#discount-app-input');
-  const submitButton = document.getElementById(target);
 
 const formatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -296,56 +288,6 @@ const updateUIFromLocalStorage = async () => {
   }
   if (discountInfo) {
     await updateCartDrawerUI(discountInfo.code);
-  }
-};
-
-// Update the UI when the page loads
-updateUIFromLocalStorage();
-
-// Update the UI when the localStorage changes
-window.addEventListener('storage', async (event) => {
-  if (event.key === 'rivka-discount-applied') {
-    await updateUIFromLocalStorage();
-  }
-});
-
-// Function to update the UI based on the localStorage data
-const updateUIFromLocalStorage = async () => {
-  console.log('updateUIFromLocalStorage')
-  const cartData = await retrieveCartData()
-  const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
-  const discountInfo = await listDiscountsData?.newTempDiscountInfo;
-  if(cartData.total_discount === 0) {
-    const discountApplied = document.querySelector('.discount-applied');
-    return discountApplied?.remove();
-  }
-  if (discountInfo) {
-    await updateCartDrawerUI('#rivka-app-discount-code-submit', discountInfo);
-  }
-};
-
-// Update the UI when the page loads
-updateUIFromLocalStorage();
-
-// Update the UI when the localStorage changes
-window.addEventListener('storage', async (event) => {
-  if (event.key === 'rivka-discount-applied') {
-    await updateUIFromLocalStorage();
-  }
-});
-
-// Function to update the UI based on the localStorage data
-const updateUIFromLocalStorage = async () => {
-  console.log('updateUIFromLocalStorage')
-  const cartData = await retrieveCartData()
-  const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
-  const discountInfo = await listDiscountsData?.newTempDiscountInfo;
-  if(cartData.total_discount === 0) {
-    const discountApplied = document.querySelector('.discount-applied');
-    return discountApplied?.remove();
-  }
-  if (discountInfo) {
-    await updateCartDrawerUI('#rivka-app-discount-code-submit', discountInfo);
   }
 };
 
