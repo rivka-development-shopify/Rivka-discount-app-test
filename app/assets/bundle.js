@@ -1,5 +1,5 @@
 // @ts-nocheck
-const API_URL = 'https://0fd5-38-51-156-60.ngrok-free.app'
+const API_URL = 'https://rivkacustomdiscounts.tech'
 const retrieveCartData = async () => {
   return await $.ajax({
     type: 'GET',
@@ -123,8 +123,8 @@ const handleUpdateDiscount = async () => {
 }
 
 const handleApplyDiscount = async (e) => {
-  const cartData = await retrieveCartData()  
-  
+  const cartData = await retrieveCartData()
+
   // fetch('https://b73f-181-31-154-153.ngrok-free.app/api/apply_discount')
   const listDiscountsResponse = await fetch(`${API_URL}/api/apply_temporary_discount`, {
     method: "POST",
@@ -134,14 +134,14 @@ const handleApplyDiscount = async (e) => {
     })
   })
 
-  const listDiscountsData = await listDiscountsResponse.json()  
-  
+  const listDiscountsData = await listDiscountsResponse.json()
+
   applyAndSave(listDiscountsData, cartData, e.target.id)
 }
-const updateCartDrawerUI = async (target, discountInfo) => {  
+const updateCartDrawerUI = async (target, discountInfo) => {
   const totals = document.querySelector('.totals');
   const submitButton = document.getElementById(target);
-  
+
   const div = document.createElement('div');
   const span1 = document.createElement('span');
   const span2 = document.createElement('span');
@@ -150,7 +150,7 @@ const updateCartDrawerUI = async (target, discountInfo) => {
   div.classList.add('discount-applied');
   div.appendChild(span1);
   div.appendChild(span2);
-  
+
   await totals.insertAdjacentElement('afterend', div);
   await submitButton.classList.remove('loading');
 }
@@ -206,10 +206,10 @@ const updateUIFromLocalStorage = async () => {
   const discountInfo = await listDiscountsData?.newTempDiscountInfo;
   if(cartData.total_discount === 0) {
     const discountApplied = document.querySelector('.discount-applied');
-    return discountApplied?.remove(); 
+    return discountApplied?.remove();
   }
-  if (discountInfo) {    
-    await updateCartDrawerUI('#rivka-app-discount-code-submit', discountInfo);    
+  if (discountInfo) {
+    await updateCartDrawerUI('#rivka-app-discount-code-submit', discountInfo);
   }
 };
 
