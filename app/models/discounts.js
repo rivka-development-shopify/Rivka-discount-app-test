@@ -14,7 +14,8 @@ export const checkIfProductBelongsToPriceRule = (productDetails, priceRule) => {
   const filterCollection = collection => {
     let isAplicable = true
     if(productDetails.collections.includes(collection.id)) {
-      if(collection.useMetafield) {
+
+      if(collection?.useMetafield || null) {
         if(
           `${(
             productDetails.variant.metafield_twc_sale_item &&
@@ -58,7 +59,7 @@ export const getDiscountCodeFromDB = async (code) => {
   if (exactMatch) {
     return exactMatch;
   }
-  
+
   // If no exact match, check for wildcard match
   const wildcardMatches = await prisma.discountCode.findMany({
     where: {
