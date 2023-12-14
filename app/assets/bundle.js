@@ -92,7 +92,7 @@ const applyAndSave = async (listDiscountsData, cartData) => {
         newTempDiscountInfo
       }));
       setTimeout(() => {
-        updateCartDrawerUI(newTempDiscountInfo.code);        
+        updateCartDrawerUI(newTempDiscountInfo.code);
       }, 2000);
     }
   } else {
@@ -109,7 +109,7 @@ const applyAndSave = async (listDiscountsData, cartData) => {
 
 const handleUpdateDiscount = async () => {
   const cartData = await retrieveCartData()
-  const { newTempDiscountInfo: discountApplied } = JSON.parse(localStorage.getItem('rivka-discount-applied')) 
+  const { newTempDiscountInfo: discountApplied } = JSON.parse(localStorage.getItem('rivka-discount-applied'))
 
   const listDiscountsResponse = await fetch(`${API_URL}/api/update_temporary_discount`, {
     method: "POST",
@@ -129,8 +129,8 @@ const handleUpdateDiscount = async () => {
 }
 
 const handleApplyDiscount = async (e) => {
-  const cartData = await retrieveCartData()  
-  
+  const cartData = await retrieveCartData()
+
   // fetch('https://b73f-181-31-154-153.ngrok-free.app/api/apply_discount')
   const listDiscountsResponse = await fetch(`${API_URL}/api/apply_temporary_discount`, {
     method: "POST",
@@ -140,10 +140,14 @@ const handleApplyDiscount = async (e) => {
     })
   })
 
-  const listDiscountsData = await listDiscountsResponse.json();  
-  
+  const listDiscountsData = await listDiscountsResponse.json();
+
   applyAndSave(listDiscountsData, cartData, e.target.id);
 }
+const updateCartDrawerUI = async (target, discountInfo) => {
+  console.log('updateCartDrawerUI')
+  const discountAppInput = document.querySelector('#discount-app-input');
+  const submitButton = document.getElementById(target);
 
 const formatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -159,8 +163,8 @@ const updateTotalPrice = async () => {
   const drawerSubTotal = document.querySelector('.cart-drawer__item--subtotal');
   const submitButton = document.getElementById('rivka-app-discount-code-submit');
   let finalPrice = cartData.original_total_price;
-  if(cartData.total_discount > 0) {    
-    finalPrice = cartData.original_total_price - cartData.total_discount;    
+  if(cartData.total_discount > 0) {
+    finalPrice = cartData.original_total_price - cartData.total_discount;
   }
   const formattedFinalprice = formatter.format(finalPrice / 100);
   const formattedTotalPrice = formatter.format(cartData.original_total_price / 100);
@@ -172,14 +176,14 @@ const updateTotalPrice = async () => {
       <div>Subtotal</div>
       <div>
         <span class="striked-price">${formattedTotalPrice}</span>
-        <span>${formattedFinalprice}</span>    
+        <span>${formattedFinalprice}</span>
       </div>
     `
   } else {
     htmlPrice = `
       <div>Subtotal</div>
       <div>
-        <span>${formattedTotalPrice}</span>    
+        <span>${formattedTotalPrice}</span>
       </div>
     `
   }
@@ -194,13 +198,13 @@ const updateTotalPrice = async () => {
 }
 const updateCartDrawerUI = async (tempCode) => {
   const cartData = await retrieveCartData();
-   
-  const discountAppliedDiv = document.querySelector('.discount_applied');    
-  const discountTitleDiv = document.querySelector('.discount-title');    
-  const dcWrapperDiv = document.querySelector('.dc_wrapper');    
+
+  const discountAppliedDiv = document.querySelector('.discount_applied');
+  const discountTitleDiv = document.querySelector('.discount-title');
+  const dcWrapperDiv = document.querySelector('.dc_wrapper');
   const discountCodesDiv = document.querySelector('.discount__codes');
-  const codeParts = tempCode.split("-");    
-  
+  const codeParts = tempCode.split("-");
+
   const codesDiv = document.createElement('div');
   codesDiv.classList.add('dc_wrapper');
   const htmlCodes = `
@@ -214,17 +218,17 @@ const updateCartDrawerUI = async (tempCode) => {
         <g id="Menu / Close_SM">
         <path id="Vector" d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
         </g>
-      </svg>  
+      </svg>
     </div>
-  `;  
+  `;
   codesDiv.innerHTML = htmlCodes;
-  
-  const div = document.createElement('div');  
+
+  const div = document.createElement('div');
   const html = `
   <div><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="tags" class="svg-inline--fa fa-tags fa-w-20" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor" d="M497.941 225.941L286.059 14.059A48 48 0 0 0 252.118 0H48C21.49 0 0 21.49 0 48v204.118a48 48 0 0 0 14.059 33.941l211.882 211.882c18.744 18.745 49.136 18.746 67.882 0l204.118-204.118c18.745-18.745 18.745-49.137 0-67.882zM112 160c-26.51 0-48-21.49-48-48s21.49-48 48-48 48 21.49 48 48-21.49 48-48 48zm513.941 133.823L421.823 497.941c-18.745 18.745-49.137 18.745-67.882 0l-.36-.36L527.64 323.522c16.999-16.999 26.36-39.6 26.36-63.64s-9.362-46.641-26.36-63.64L331.397 0h48.721a48 48 0 0 1 33.941 14.059l211.882 211.882c18.745 18.745 18.745 49.137 0 67.882z"></path></svg>
   <span>Discount applied</span></div><span>${formatter.format(cartData.total_discount / 100)}</span>
-  `;  
-  
+  `;
+
   div.classList.add('discount-title');
   div.innerHTML = html;
   setTimeout(() => {
@@ -232,8 +236,8 @@ const updateCartDrawerUI = async (tempCode) => {
   }, 2000);
   discountCodesDiv?.appendChild(codesDiv);
   discountTitleDiv?.remove();
-  dcWrapperDiv?.remove(); 
-  await discountAppliedDiv.appendChild(div);  
+  dcWrapperDiv?.remove();
+  await discountAppliedDiv.appendChild(div);
 }
 
 const createForm = () => {
@@ -282,16 +286,41 @@ observeCartChanges()
 } */
 
 // Function to update the UI based on the localStorage data
-const updateUIFromLocalStorage = async () => {  
+const updateUIFromLocalStorage = async () => {
   const cartData = await retrieveCartData()
   const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
   const discountInfo = await listDiscountsData?.newTempDiscountInfo;
-  
-  if(cartData.total_discount === 0) {      
+
+  if(cartData.total_discount === 0) {
     return updateTotalPrice();
   }
-  if (discountInfo) {       
-    await updateCartDrawerUI(discountInfo.code);    
+  if (discountInfo) {
+    await updateCartDrawerUI(discountInfo.code);
+  }
+};
+
+// Update the UI when the page loads
+updateUIFromLocalStorage();
+
+// Update the UI when the localStorage changes
+window.addEventListener('storage', async (event) => {
+  if (event.key === 'rivka-discount-applied') {
+    await updateUIFromLocalStorage();
+  }
+});
+
+// Function to update the UI based on the localStorage data
+const updateUIFromLocalStorage = async () => {
+  console.log('updateUIFromLocalStorage')
+  const cartData = await retrieveCartData()
+  const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
+  const discountInfo = await listDiscountsData?.newTempDiscountInfo;
+  if(cartData.total_discount === 0) {
+    const discountApplied = document.querySelector('.discount-applied');
+    return discountApplied?.remove();
+  }
+  if (discountInfo) {
+    await updateCartDrawerUI('#rivka-app-discount-code-submit', discountInfo);
   }
 };
 

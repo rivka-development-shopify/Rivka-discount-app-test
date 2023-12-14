@@ -6,7 +6,8 @@ import { randomKey } from '../utils/random'
 import {
   createNewTempDiscount,
   updateTempDiscountById,
-  deleteTempDiscountById
+  deleteTempDiscountById,
+  checkForNativeDiscount
 } from '../services/shopifyAdmin'
 
 
@@ -30,19 +31,28 @@ export const createTempDiscount = async (body) => {
       }
     }
 
+    let stackDiscounts = [];
     const UI_discountCode = await getDiscountCodeFromDB(body.addedCode)
     if(!UI_discountCode) {
-      throw {
-        type: 'InexistentDiscountCode',
+      const nativeDiscountId = await checkForNativeDiscount(body.addedCode)
+      if(!nativeDiscountId) {
+        throw {
+          type: 'InexistentDiscountCode',
+        }
       }
-    }
-    if(!UI_discountCode.enabled) {
-      throw {
-        type: 'DiscountCodeNotAllowed',
+
+      stackDiscounts = [nativeDiscountId];
+    } else {
+      if(!UI_discountCode.enabled) {
+        throw {
+          type: 'DiscountCodeNotAllowed',
+        }
       }
+      stackDiscounts = UI_discountCode.stackDiscounts;
     }
+
     const newPricesForProducts = await calculatePricesForProducts(
-      UI_discountCode.stackDiscounts,
+      stackDiscounts,
       body.cartProducts
     )
 
