@@ -15,20 +15,20 @@ const getBundleMinFile = async () => {
   let bundlePath = `${cwd}/app/assets/bundle.js`;
   const rawBundle = await fs.promises.readFile(bundlePath, 'utf-8');
   const bundle = rawBundle
-  const { code } = UglifyJS.minify(bundle)
-  const bundleMin = JavaScriptObfuscator.obfuscate(
-    bundle, {
-        compact: false,
-        controlFlowFlattening: true,
-        controlFlowFlatteningThreshold: 1,
-        numbersToExpressions: true,
-        simplify: true,
-        stringArrayShuffle: true,
-        splitStrings: true,
-        stringArrayThreshold: 1
-    }
-  )
-    return bundleMin
+  // const { code } = UglifyJS.minify(bundle)
+  // const bundleMin = JavaScriptObfuscator.obfuscate(
+  //   bundle, {
+  //       compact: false,
+  //       controlFlowFlattening: true,
+  //       controlFlowFlatteningThreshold: 1,
+  //       numbersToExpressions: true,
+  //       simplify: true,
+  //       stringArrayShuffle: true,
+  //       splitStrings: true,
+  //       stringArrayThreshold: 1
+  //   }
+  // )
+    return bundle
   } catch(e) {
     console.error({
       msg: "Error getting bundle min file",
