@@ -191,15 +191,28 @@ export const updateTempDiscount = async (body) => {
       }
     }
 
+    let stackDiscounts = [];
     const UI_discountCode = await getDiscountCodeFromDB(tempDiscountCode.refered_code)
     if(!UI_discountCode) {
-      throw {
-        type: 'InexistentReferedDiscountCode',
+      const nativeDiscountId = await checkForNativeDiscount(tempDiscountCode.refered_code)
+      if(!nativeDiscountId) {
+        throw {
+          type: 'InexistentDiscountCode',
+        }
       }
+
+      stackDiscounts = [nativeDiscountId];
+    } else {
+      if(!UI_discountCode.enabled) {
+        throw {
+          type: 'DiscountCodeNotAllowed',
+        }
+      }
+      stackDiscounts = UI_discountCode.stackDiscounts;
     }
 
     const newPricesForProducts = await calculatePricesForProducts(
-      UI_discountCode.stackDiscounts,
+      stackDiscounts,
       body.cartProducts
     )
 
