@@ -140,9 +140,9 @@ const handleApplyDiscount = async (e) => {
     })
   })
 
-  const listDiscountsData = await listDiscountsResponse.json()  
+  const listDiscountsData = await listDiscountsResponse.json();  
   
-  applyAndSave(listDiscountsData, cartData, e.target.id)
+  applyAndSave(listDiscountsData, cartData, e.target.id);
 }
 
 const formatter = new Intl.NumberFormat('en-US', {
@@ -282,7 +282,7 @@ observeCartChanges()
 } */
 
 // Function to update the UI based on the localStorage data
-const updateUIFromLocalStorage = async () => {
+const updateUIFromLocalStorage = async () => {  
   const cartData = await retrieveCartData()
   const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
   const discountInfo = await listDiscountsData?.newTempDiscountInfo;
