@@ -27,7 +27,7 @@ const removeDiscountCookie = async () => {
 
 const getDiscountCookie = () => {
   return document.cookie.split(';').some(c => {
-      return c.trim().startsWith(discount_code + '=');
+      return c.trim().startsWith('discount_code=');
   });
 }
 
@@ -252,6 +252,11 @@ const updateUIFromLocalStorage = async () => {
 
 // Update the UI when the page loads
 window.addEventListener("load", (event) => {
+  const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
+  const discountInfo = listDiscountsData?.newTempDiscountInfo;
+  if(!getDiscountCookie() && discountInfo) {
+    addDiscountCookie(discountInfo.code)
+  }
   updateUIFromLocalStorage();
 });
 
