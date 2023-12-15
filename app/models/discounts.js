@@ -140,7 +140,9 @@ export const getProductDiscountedPrices = (productsDetails, stackedPriceRules) =
         return priceRule.combinesWith.productDiscounts
       })
       if(combinedDiscountsApplied.length === 0) {
-        discountsApplied = [discountsApplied[0]];
+        discountsApplied = [discountsApplied.reduce(function(previous,current){
+          return previous.percentage > current.percentage ? previous : current;
+      })];
       } else {
         discountsApplied = combinedDiscountsApplied;
       }
