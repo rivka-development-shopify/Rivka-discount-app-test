@@ -1,5 +1,5 @@
 // @ts-nocheck
-const API_URL = 'https://rivkacustomdiscounts.tech'
+const API_URL = 'https://5eb5-38-51-157-55.ngrok-free.app'
 const retrieveCartData = async () => {
   return await $.ajax({
     type: 'GET',
@@ -27,7 +27,7 @@ const removeDiscountCookie = async () => {
 
 const getDiscountCookie = () => {
   return document.cookie.split(';').some(c => {
-      return c.trim().startsWith(discount_code + '=');
+      return c.trim().startsWith("discount_code=");
   });
 }
 
@@ -70,7 +70,7 @@ const applyAndSave = async (listDiscountsData) => {
 
 const handleUpdateDiscount = async () => {
   const cartData = await retrieveCartData()
-  const { newTempDiscountInfo: discountApplied } = JSON.parse(localStorage.getItem('rivka-discount-applied'))
+  const { newTempDiscountInfo: discountApplied } = JSON.parse(localStorage.getItem('rivka-discount-applied'));
 
   const listDiscountsResponse = await fetch(`${API_URL}/api/update_temporary_discount`, {
     method: "POST",
@@ -252,6 +252,9 @@ const updateUIFromLocalStorage = async () => {
 
 // Update the UI when the page loads
 window.addEventListener("load", (event) => {
+  if(!getDiscountCookie()) {
+    handleRemoveDiscount();
+  }
   updateUIFromLocalStorage();
 });
 
