@@ -126,7 +126,7 @@ export const getTempDiscountCodeFromDB = async (code) => {
 
 export const getProductDiscountedPrices = (productsDetails, stackedPriceRules) => {
   return productsDetails.map( productDetails => {
-    const discountsApplied = stackedPriceRules.filter(
+    let discountsApplied = stackedPriceRules.filter(
       priceRule => {
         return checkIfProductBelongsToPriceRule(
           productDetails,
@@ -134,6 +134,17 @@ export const getProductDiscountedPrices = (productsDetails, stackedPriceRules) =
         )
       }
     )
+
+    if(discountsApplied.length > 1) {
+      const combinedDiscountsApplied = discountsApplied.filter(priceRule => {
+        return priceRule.combinesWith.productDiscounts
+      })
+      if(combinedDiscountsApplied.length === 0) {
+        discountsApplied = [discountsApplied[0]];
+      } else {
+        discountsApplied = combinedDiscountsApplied;
+      }
+    }
 
     const percentage = discountsApplied.reduce(
       (accumulator, currentValue) => accumulator + currentValue.percentage,
