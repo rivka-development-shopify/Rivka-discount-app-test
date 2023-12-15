@@ -91,9 +91,8 @@ const applyAndSave = async (listDiscountsData, cartData) => {
         productDiscountedPrices,
         newTempDiscountInfo
       }));
-      setTimeout(() => {
-        updateCartDrawerUI(newTempDiscountInfo.code);
-      }, 2000);
+      const originalPrice = productDiscountedPrices.reduce((discountInfo, acm) => { return acm + discountInfo.price}, 0);
+      updateCartDrawerUI(newTempDiscountInfo.code, newTempDiscountInfo.amount);
     }
   } else {
     errorMessage.style.display = 'block';
@@ -148,37 +147,32 @@ const formatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 2,
 });
 
-const updateTotalPrice = async () => {
-  const cartData = await retrieveCartData();
+const updateCartDrawerUI = (tempCode, discounted_price, original_price) => {
+  console.log('updateCartDrawerUI', tempCode, discounted_price, original_price)
+  // CREATE ELEMENTS WITH VANILLA JS BASED ON TEMP_CODE
+  const discountAppliedDiv = document.querySelector('.discount_applied');
+  const discountTitleDiv = document.querySelector('.discount-title');
+  const dcWrapperDiv = document.querySelector('.dc_wrapper');
+  const discountCodesDiv = document.querySelector('.discount__codes');
+  const codeParts = tempCode.split("-");
+
   const input = document.querySelector('#rivka-app-discount-code-input')
   const subTotal = document.querySelector('.cart__item--subtotal');
   const drawerSubTotal = document.querySelector('.cart-drawer__item--subtotal');
   const submitButton = document.getElementById('rivka-app-discount-code-submit');
-  let finalPrice = cartData.original_total_price;
-  if(cartData.total_discount > 0) {
-    finalPrice = cartData.original_total_price - cartData.total_discount;
-  }
-  const formattedFinalprice = formatter.format(finalPrice / 100);
-  const formattedTotalPrice = formatter.format(cartData.original_total_price / 100);
 
+  /* const discounted_price_string = discounted_price.toString();
+  const original_price_string = original_price.toString();
+  const formattedFinalprice = formatter.format(finalPrice / 100);
+  const formattedTotalPrice = formatter.format(cartData.original_total_price / 100); */
   const priceDiv = document.createElement('div');
-  let htmlPrice = ``;
-  if(cartData.total_discount > 0) {
-    htmlPrice = `
-      <div>Subtotal</div>
-      <div>
-        <span class="striked-price">${formattedTotalPrice}</span>
-        <span>${formattedFinalprice}</span>
-      </div>
-    `
-  } else {
-    htmlPrice = `
-      <div>Subtotal</div>
-      <div>
-        <span>${formattedTotalPrice}</span>
-      </div>
-    `
-  }
+  let htmlPrice = `
+    <div>Subtotal</div>
+    <div>
+      <span class="striked-price">$${original_price}</span>
+      <span>$${original_price - discounted_price}</span>
+    </div>
+  `;
 
   priceDiv.classList.add('cart-drawer__item--subtotal');
   priceDiv.innerHTML = htmlPrice;
@@ -186,16 +180,7 @@ const updateTotalPrice = async () => {
   subTotal?.insertAdjacentElement('afterend', priceDiv);
   input.value = '';
   submitButton.classList.remove('loading');
-  submitButton.disabled = false;
-}
-const updateCartDrawerUI = async (tempCode) => {
-  const cartData = await retrieveCartData();
-
-  const discountAppliedDiv = document.querySelector('.discount_applied');
-  const discountTitleDiv = document.querySelector('.discount-title');
-  const dcWrapperDiv = document.querySelector('.dc_wrapper');
-  const discountCodesDiv = document.querySelector('.discount__codes');
-  const codeParts = tempCode.split("-");
+  submitButton.disabled = false;    
 
   const codesDiv = document.createElement('div');
   codesDiv.classList.add('dc_wrapper');
@@ -218,18 +203,16 @@ const updateCartDrawerUI = async (tempCode) => {
   const div = document.createElement('div');
   const html = `
   <div><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="tags" class="svg-inline--fa fa-tags fa-w-20" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor" d="M497.941 225.941L286.059 14.059A48 48 0 0 0 252.118 0H48C21.49 0 0 21.49 0 48v204.118a48 48 0 0 0 14.059 33.941l211.882 211.882c18.744 18.745 49.136 18.746 67.882 0l204.118-204.118c18.745-18.745 18.745-49.137 0-67.882zM112 160c-26.51 0-48-21.49-48-48s21.49-48 48-48 48 21.49 48 48-21.49 48-48 48zm513.941 133.823L421.823 497.941c-18.745 18.745-49.137 18.745-67.882 0l-.36-.36L527.64 323.522c16.999-16.999 26.36-39.6 26.36-63.64s-9.362-46.641-26.36-63.64L331.397 0h48.721a48 48 0 0 1 33.941 14.059l211.882 211.882c18.745 18.745 18.745 49.137 0 67.882z"></path></svg>
-  <span>Discount applied</span></div><span>${formatter.format(cartData.total_discount / 100)}</span>
+  <span>Discount applied</span></div><span>$${discounted_price}</span>
   `;
 
   div.classList.add('discount-title');
   div.innerHTML = html;
-  setTimeout(() => {
-    updateTotalPrice();
-  }, 2000);
+  // updateTotalPrice();
   discountCodesDiv?.appendChild(codesDiv);
   discountTitleDiv?.remove();
   dcWrapperDiv?.remove();
-  await discountAppliedDiv.appendChild(div);
+  discountAppliedDiv.appendChild(div);
 }
 
 const createForm = () => {
@@ -254,13 +237,32 @@ const createForm = () => {
   div.appendChild(button)
 }
 
-const observeCartChanges = () => {
+const switchCartSubtotal = () => {
+  if(!localStorage.getItem('rivka-discount-applied')) {   
+    document.querySelector('.cart-drawer__item--subtotal').style.display = 'none';
+    document.querySelector('.cart__item--subtotal').style.display = 'flex';
+    return false
+  } else {
+    document.querySelector('.cart-drawer__item--subtotal').style.display = 'flex';
+    document.querySelector('.cart__item--subtotal').style.display = 'none';
+    return true
+  }   
+};
+
+const onCartChange = () => {
+  if(switchCartSubtotal()) {
+    handleUpdateDiscount()
+  }
+  return
+}
+
+const observeCartChanges = () => { 
   const cartObserver = new PerformanceObserver((list) => {
     list.getEntries().forEach((entry) => {
       const isValidRequestType = ['xmlhttprequest', 'fetch'].includes(entry.initiatorType);
       const isCartChangeRequest = /\/cart\//.test(entry.name);
       if (isValidRequestType && isCartChangeRequest) {
-        handleUpdateDiscount()
+        onCartChange()
       }
     });
   });
@@ -279,20 +281,21 @@ observeCartChanges()
 
 // Function to update the UI based on the localStorage data
 const updateUIFromLocalStorage = async () => {
-  const cartData = await retrieveCartData()
   const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
   const discountInfo = await listDiscountsData?.newTempDiscountInfo;
+  const productDiscountedPrices = await listDiscountsData?.productDiscountedPrices;
 
-  if(cartData.total_discount === 0) {
-    return updateTotalPrice();
-  }
-  if (discountInfo) {
-    await updateCartDrawerUI(discountInfo.code);
+  if (discountInfo && productDiscountedPrices) {
+    const originalPrice = productDiscountedPrices.reduce((acm, discountInfo) => { return acm + discountInfo.price}, 0);
+    updateCartDrawerUI(discountInfo.code, discountInfo.amount, originalPrice);
+    switchCartSubtotal()
   }
 };
 
 // Update the UI when the page loads
-updateUIFromLocalStorage();
+window.addEventListener("load", (event) => {
+  updateUIFromLocalStorage();
+});
 
 // Update the UI when the localStorage changes
 window.addEventListener('storage', async (event) => {
@@ -302,3 +305,4 @@ window.addEventListener('storage', async (event) => {
 });
 
 console.log('Custom Discounts (Rivka): Loaded')
+;
