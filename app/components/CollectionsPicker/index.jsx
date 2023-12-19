@@ -17,7 +17,7 @@ export default function CollectionsPicker (props) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCollections, setSelectedCollections] = useState(props.value ?? []);
 
-  useEffect(() => {    
+  useEffect(() => {
     props.onChange(selectedCollections)
   }, [selectedCollections])
 
@@ -70,17 +70,18 @@ export default function CollectionsPicker (props) {
   const handleRadioChange = (value, collectionId) => {
     setSelectedCollections(oldSelectedCollections => {
       const newSelectedCollections = [...oldSelectedCollections];
-  
+
       const changedCollection = newSelectedCollections.find(
         collection => collection.id === collectionId
       );
       if (changedCollection) {
         changedCollection.metafiledValue = value;
+        changedCollection.useMetafield = value !== null
       }
       return newSelectedCollections;
     });
   };
-  
+
 
 
   return  (
@@ -121,7 +122,7 @@ export default function CollectionsPicker (props) {
                 <LegacyStack vertical={true} alignment='baseline'>
                   <Text variant="bodyMd" fontWeight="bold" as="h3">
                     {collection.title}
-                  </Text>                  
+                  </Text>
                   <LegacyStack>
                     <RadioButton
                         label="All Variants"
@@ -144,9 +145,9 @@ export default function CollectionsPicker (props) {
                       name={collection.title}
                       onChange={() => handleRadioChange(false, collection.id)}
                     />
-                    
+
                   </LegacyStack>
-                  
+
                 </LegacyStack>
               </ResourceItem>
             );
