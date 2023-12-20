@@ -14,15 +14,9 @@ export const checkIfProductBelongsToPriceRule = (productDetails, priceRule) => {
   const filterCollection = collection => {
     let isAplicable = true
     if(productDetails.collections.includes(collection.id)) {
-
-      if(collection?.useMetafield || null) {
+      if(collection?.useMetafield) {
         if(
-          `${(
-            productDetails.variant.metafield_twc_sale_item &&
-            productDetails.variant.metafield_twc_sale_item === 'true'
-            ) ? true : false}`
-          !==
-          `${collection.metafiledValue}`
+          !(`${productDetails.variant.metafield_twc_sale_item}` === `${collection.metafiledValue}`)
         ) {
           isAplicable = false
         }
