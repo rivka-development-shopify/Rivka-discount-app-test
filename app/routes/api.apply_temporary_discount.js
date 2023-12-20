@@ -11,11 +11,7 @@ export const action = async ({ request }) => {
   const body = await request.json();
   switch(request.method) {
     case 'POST':
-      const response = await createTempDiscount(body)
-      console.log('response apply')
-      console.log(response)
-      console.log('end response apply')
-      return await cors(request, response);
+      return await cors(request, await createTempDiscount(body));
     break;
     default:
       return await cors(request, json(
