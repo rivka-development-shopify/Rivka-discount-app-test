@@ -34,8 +34,8 @@ function Extension() {
   const estDay = estDateTimeString.split(',')[0];
   const estHour = parseInt(estDateTimeString.split(' ')[1]);
     
-  const esteticaIncluded = lines.current?.some(item => item.merchandise.product.vendor == "Snowboard Vendor");
-  const regProdIncluded = lines.current?.some(item => item.merchandise.product.vendor != "Snowboard Vendor");
+  const esteticaIncluded = lines.current?.some(item => item.merchandise.product.vendor == "Estetica");
+  const regProdIncluded = lines.current?.some(item => item.merchandise.product.vendor != "Estetica");
   
   
   if(esteticaIncluded && regProdIncluded) {
