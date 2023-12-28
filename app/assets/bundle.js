@@ -98,8 +98,9 @@ const handleApplyDiscount = async (e) => {
   })
 
   const listDiscountsData = await listDiscountsResponse.json();
-
-  applyAndSave(listDiscountsData);
+  if(listDiscountsData.newTempDiscountInfo.amount !== 0.0) {
+    applyAndSave(listDiscountsData);
+  }
 }
 
 const handleRemoveDiscount = () => {
@@ -201,6 +202,7 @@ const createForm = () => {
   }
   button.appendChild(document.createTextNode('Apply!'))
   input.placeholder = 'Ex: 12345678...'
+  input.style.textTransform = 'uppercase'
   div.appendChild(input)
   div.appendChild(button)
 }
