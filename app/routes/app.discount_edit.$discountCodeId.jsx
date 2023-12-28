@@ -45,7 +45,7 @@ export const loader = async ({ request, params }) => {
     const response = await admin.graphql(
       `#graphql
         query {
-          discountNodes(first: 100) {
+          discountNodes(first: 100, reverse: true) {
             edges {
               node {
                 id
