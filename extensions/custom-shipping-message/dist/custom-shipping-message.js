@@ -19536,8 +19536,8 @@ ${errorInfo.componentStack}`);
     const estDateTimeString = currentDate.toLocaleString("en-US", timeOptions);
     const estDay = estDateTimeString.split(",")[0];
     const estHour = parseInt(estDateTimeString.split(" ")[1]);
-    const esteticaIncluded = (_a = lines.current) == null ? void 0 : _a.some((item) => item.merchandise.product.vendor == "Snowboard Vendor");
-    const regProdIncluded = (_b = lines.current) == null ? void 0 : _b.some((item) => item.merchandise.product.vendor != "Snowboard Vendor");
+    const esteticaIncluded = (_a = lines.current) == null ? void 0 : _a.some((item) => item.merchandise.product.vendor == "Estetica");
+    const regProdIncluded = (_b = lines.current) == null ? void 0 : _b.some((item) => item.merchandise.product.vendor != "Estetica");
     if (esteticaIncluded && regProdIncluded) {
       if ((estDay === "Monday" || estDay === "Tuesday" || estDay === "Wednesday" || estDay === "Thursday" || estDay === "Friday") && estHour < 14) {
         return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { children: [
@@ -19608,4 +19608,3 @@ ${errorInfo.componentStack}`);
     }
   }
 })();
-//# sourceMappingURL=custom-shipping-message.js.map
