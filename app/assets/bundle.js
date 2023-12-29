@@ -53,8 +53,8 @@ const applyAndSave = async (listDiscountsData) => {
         productDiscountedPrices,
         newTempDiscountInfo
       }));
-      
-      updateCartDrawerUI(newTempDiscountInfo.code, newTempDiscountInfo.amount, productDiscountedPrices);
+      const originalPrice = productDiscountedPrices.reduce((acm, discountInfo) => { return acm + discountInfo.price}, 0);
+      updateCartDrawerUI(newTempDiscountInfo.code, newTempDiscountInfo.amount, originalPrice);
     }
   } else {
     errorMessage.style.display = 'block';
@@ -87,8 +87,6 @@ const handleUpdateDiscount = async () => {
 
 const handleApplyDiscount = async (e) => {
   const cartData = await retrieveCartData()
-  const submitButton = document.getElementById('rivka-app-discount-code-submit');
-  const errorMessage = document.querySelector('.stack-discounts-message');
 
   // fetch('https://b73f-181-31-154-153.ngrok-free.app/api/apply_discount')
   const listDiscountsResponse = await fetch(`${API_URL}/api/apply_temporary_discount`, {
@@ -100,17 +98,8 @@ const handleApplyDiscount = async (e) => {
   })
 
   const listDiscountsData = await listDiscountsResponse.json();
-  
-  if(listDiscountsData.body.data.newTempDiscountInfo?.amount !== 0) {
-      applyAndSave(listDiscountsData);
-  } else {    
-    errorMessage.style.display = 'block';
-    e.target.classList.remove('loading');
-    e.target.disabled = false;
-    setTimeout(() => {
-      errorMessage.style.display = 'none';
-    }, 3000);
-    submitButton.classList.remove('loading');
+  if(listDiscountsData.newTempDiscountInfo.amount !== 0.0) {
+    applyAndSave(listDiscountsData);
   }
 }
 
@@ -119,50 +108,15 @@ const handleRemoveDiscount = () => {
   localStorage.removeItem('rivka-discount-applied')
   localStorage.removeItem('discountCode')
   removeDiscountCookie()
-  document.querySelectorAll('.cart__item-price-col')?.forEach((item) => {
-    const striked = item.querySelector('.cart__price--strikethrough');
-    if(striked) {
-      striked.parentElement.style.display = 'none'
-    } else {
-      item.style.display = 'block'
-    }
-    
-  });
-  updateCartDrawerUI('', 0.0, [])
+  updateCartDrawerUI('', 0.0, 0.0)
 }
 
-const updateCartDrawerUI = (tempCode, discounted_price, productDiscountedPrices) => {
-  const original_price = productDiscountedPrices.reduce((acm, discountInfo) => { return acm + discountInfo.price}, 0);
-  const codeParts = tempCode.split("-");
-
-  productDiscountedPrices.forEach((discountInfo) => { 
-    if(discountInfo.discountApplied > 0) {
-      const id = discountInfo.productVariantId.split('/')[4];
-      const domItem = document.querySelector(`[data-key*="${id}"]`);
-      const itemDetails = domItem.querySelector('.cart__item-details .cart__item-sub');
-      const priceCol = itemDetails.querySelector('.cart__item-price-col');
-      if(priceCol) {priceCol.style.display = 'none'}      
-      let div = document.createElement('div');
-      div.innerHTML = `                       
-          <small class="cart__price cart__price--strikethrough"><span class="">$${discountInfo.price.toFixed(2)}</span></small>                  
-          <span class="cart__price cart__discount"><span class="">$${discountInfo.price.toFixed(2) - discountInfo.discountApplied.toFixed(2)}</span></span>                        
-          <small class="cart__discount">${codeParts[1]} (-$${discountInfo.discountApplied.toFixed(2)})</small>        
-      `;
-      div.classList.add('cart__item-price-col');     
-      div.classList.add('text-right');     
-     
-      itemDetails.appendChild(div);
-      console.log(discountInfo)
-    }  
-  });
+const updateCartDrawerUI = (tempCode, discounted_price, original_price) => {
   // CREATE ELEMENTS WITH VANILLA JS BASED ON TEMP_CODE
   const discountAppliedDiv = document.querySelector('.discount_applied');
   const discountTitleDiv = document.querySelector('.discount-title');
   const dcWrapperDiv = document.querySelector('.dc_wrapper');
   const discountCodesDiv = document.querySelector('.discount__codes');
-  const discountCodesDiv = document.querySelector('.discount__codes');
-  const codeParts = tempCode.split("-");
-  const discountCodesDiv = document.querySelector('.discount__codes');  
   const codeParts = tempCode.split("-");
 
   const input = document.querySelector('#rivka-app-discount-code-input')
@@ -291,8 +245,9 @@ const updateUIFromLocalStorage = async () => {
   const discountInfo = await listDiscountsData?.newTempDiscountInfo;
   const productDiscountedPrices = await listDiscountsData?.productDiscountedPrices;
 
-  if (discountInfo && productDiscountedPrices) {    
-    updateCartDrawerUI(discountInfo.code, discountInfo.amount, productDiscountedPrices);
+  if (discountInfo && productDiscountedPrices) {
+    const originalPrice = productDiscountedPrices.reduce((acm, discountInfo) => { return acm + discountInfo.price}, 0);
+    updateCartDrawerUI(discountInfo.code, discountInfo.amount, originalPrice);
     switchCartSubtotal()
   }
 };
