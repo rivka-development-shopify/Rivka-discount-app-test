@@ -34,99 +34,39 @@ import { parseFormDataToJson } from '../utils/formatData';
 import shopify from "../shopify.server";
 
 import DiscountSelector from "~/components/DiscountSelector";
+import { getDiscounts } from "~/services/shopifyAdmin";
 
 // this is the method "get"
 export const loader = async ({ request, params }) => {
   try {
     const { session } = await authenticate.admin(request);
-    const { admin } = await shopify.authenticate.admin(request);
     const discountCode = await getDiscountCodeById(params.discountCodeId);
-
-    const response = await admin.graphql(
-      `#graphql
-        query {
-          discountNodes(first: 100, reverse: true) {
-            edges {
-              node {
-                id
-                discount {
-                  ... on DiscountCodeFreeShipping {
-                    title
-                    status
-                    codes(first: 5) {
-                      edges {
-                        node {
-                          code
-                        }
-                      }
-                    }
-                  }
-                  ... on DiscountCodeBxgy {
-                    title
-                    status
-                    codes(first: 5) {
-                      edges {
-                        node {
-                          code
-                        }
-                      }
-                    }
-                  }
-                  ... on DiscountCodeBasic {
-                    title
-                    status
-                    codes(first: 5) {
-                      edges {
-                        node {
-                          code
-                        }
-                      }
-                    }
-                  }
-                  ... on DiscountCodeApp {
-                    title
-                    status
-                    codes(first: 5) {
-                      edges {
-                        node {
-                          code
-                        }
-                      }
-                    }
-                  }
-                  ... on DiscountAutomaticBxgy {
-                    title
-                    status
-                  }
-                  ... on DiscountAutomaticBasic {
-                    title
-                    status
-                  }
-                  ... on DiscountAutomaticApp {
-                    title
-                    status
-                  }
-                }
-              }
-            }
-          }
-        }
-      `,
-    );
-
-    const rawShopifyCurrentDiscounts = await response.json();
-
-    const shopifyCurrentDiscounts = rawShopifyCurrentDiscounts.data.discountNodes.edges.map(
+    console.log('DOUGLAS -1 START PROCESS')
+    const rawShopifyCurrentDiscounts = await getDiscounts(request);
+    const shopifyCurrentDiscounts = rawShopifyCurrentDiscounts.map(
       ({node}) => ({
         id: node.id,
+        type: node.discount.__typename,
         title: node.discount?.title ?? '',
         status: node.discount?.status ?? 'EXPIRED',
-        codes: node.discount?.codes?.edges.map(edge => edge.node?.code ?? '') ?? []
+        codes: node.discount?.codes?.edges.map(edge => edge.node?.code ?? '') ?? [],
+        creatorOrEditor: node.events.edges.length > 0 ? node.events.edges[0].node.appTitle : null
       })
-    ).filter(discount => discount.status !== 'EXPIRED').filter(discount => !discount.id.includes('Automatic'));
+    )
+    .filter(discount => !discount.type.includes('Automatic'))
+    .filter(discount => discount.status !== 'EXPIRED')
+    .filter(discount => (
+      !(
+        (
+          discount.creatorOrEditor.includes("DiscountYard — Stack Discounts") ||
+          discount.creatorOrEditor.includes("Custom Discounts")
+        ) && discount.type === 'DiscountCodeBasic'
+      )
+    ));
 
     return json({ shop: session.shop.replace(".myshopify.com", ""), discountCode, shopifyCurrentDiscounts, discountCodeId: params.discountCodeId });
   } catch(e) {
+    console.log(e)
     return json({ error: 'Unable to retrieve stack discount', e});
   }
 };
@@ -202,6 +142,10 @@ export default function Index() {
     }, {method: 'PUT'})
   }
 
+  const handleTest = () => {
+    console.log(shopifyCurrentDiscounts)
+  }
+
   const errorBanner =
     (submitError || loadError || error !== '') ? (
       <Layout.Section>
@@ -221,7 +165,7 @@ export default function Index() {
       divider={false}
       fullWidth={false}
       primaryAction={{content: "Save Changes", onAction: () => {handleFormSubmit()}, disabled: !formModified  }}
-
+      secondaryActions={[{content: "TESTE", onAction: () => {handleTest()}}]}
     >
       {/* //ADD A SHOPIFY POLARIS SAVE BAR EVERYTIME discountCodeS STATE IS DIFFERENT FROM ORIGINAL discountCodeS */}
       <Layout sectioned>

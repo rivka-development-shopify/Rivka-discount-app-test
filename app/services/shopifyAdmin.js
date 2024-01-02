@@ -460,6 +460,104 @@ export const checkForNativeDiscount = async (code) => {
   }
 }
 
+export const getDiscounts = async (request, retrievedDiscounts = []) => {
+  const { admin } = await shopify.authenticate.admin(request);
+  let cursor = ''
+  if(retrievedDiscounts.length > 0) {
+    cursor = `after: "${retrievedDiscounts.at(-1).cursor}", `
+  }
+
+  const response = await admin.graphql(
+    `#graphql
+      query {
+        discountNodes(first: 50, ${cursor} reverse: true) {
+          edges {
+            cursor
+            node {
+              id
+              events(first: 1) {
+                edges {
+                  node {
+                    id
+                    __typename
+                    ... on BasicEvent {
+                      id
+                      appTitle
+                    }
+                  }
+                }
+              }
+              discount {
+                __typename
+                ... on DiscountCodeFreeShipping {
+                  title
+                  status
+                  codes(first: 1) {
+                    edges {
+                      node {
+                        code
+                      }
+                    }
+                  }
+                }
+                ... on DiscountCodeBxgy {
+                  title
+                  status
+                  codes(first: 1) {
+                    edges {
+                      node {
+                        code
+                      }
+                    }
+                  }
+                }
+                ... on DiscountCodeBasic {
+                  title
+                  status
+                  codes(first: 1) {
+                    edges {
+                      node {
+                        code
+                      }
+                    }
+                  }
+                }
+                ... on DiscountCodeApp {
+                  title
+                  status
+                  codes(first: 1) {
+                    edges {
+                      node {
+                        code
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `,
+  );
+
+  const rawDiscounts = await response.json();
+
+  let acumulatedDiscounts;
+  if(retrievedDiscounts.length > 0) {
+    acumulatedDiscounts = [...retrievedDiscounts, ...rawDiscounts.data.discountNodes.edges]
+  } else {
+    acumulatedDiscounts = rawDiscounts.data.discountNodes.edges
+  }
+
+
+  if(rawDiscounts.data.discountNodes.edges.length < 50) {
+    return acumulatedDiscounts
+  } else {
+    return await getDiscounts(request, acumulatedDiscounts)
+  }
+}
+
 export default {
   getProductsDetails,
   getDiscountsRulesByIds,
