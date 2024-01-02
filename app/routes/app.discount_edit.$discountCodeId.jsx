@@ -41,10 +41,6 @@ export const loader = async ({ request, params }) => {
   try {
     const { session } = await authenticate.admin(request);
     const discountCode = await getDiscountCodeById(params.discountCodeId);
-<<<<<<< HEAD
-    console.log('DOUGLAS -1 START PROCESS')
-=======
->>>>>>> heroku
     const rawShopifyCurrentDiscounts = await getDiscounts(request);
     const shopifyCurrentDiscounts = rawShopifyCurrentDiscounts.map(
       ({node}) => ({

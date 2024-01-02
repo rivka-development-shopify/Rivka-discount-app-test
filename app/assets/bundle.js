@@ -158,13 +158,9 @@ const updateCartDrawerUI = (tempCode, discounted_price, productDiscountedPrices)
   // CREATE ELEMENTS WITH VANILLA JS BASED ON TEMP_CODE
   const discountAppliedDiv = document.querySelector('.discount_applied');
   const discountTitleDiv = document.querySelector('.discount-title');
-  const dcWrapperDiv = document.querySelector('.dc_wrapper');
-  const discountCodesDiv = document.querySelector('.discount__codes');
-  const discountCodesDiv = document.querySelector('.discount__codes');
-  const codeParts = tempCode.split("-");
+  const dcWrapperDiv = document.querySelector('.dc_wrapper');  
   const discountCodesDiv = document.querySelector('.discount__codes');  
-  const codeParts = tempCode.split("-");
-
+  
   const input = document.querySelector('#rivka-app-discount-code-input')
   const subTotal = document.querySelector('.cart__item--subtotal');
   const drawerSubTotal = document.querySelector('.cart-drawer__item--subtotal');
