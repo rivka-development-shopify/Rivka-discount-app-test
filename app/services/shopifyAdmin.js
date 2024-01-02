@@ -470,7 +470,7 @@ export const getDiscounts = async (request, retrievedDiscounts = []) => {
   const response = await admin.graphql(
     `#graphql
       query {
-        discountNodes(first: 50, ${cursor} reverse: true) {
+        discountNodes(first: 50, ${cursor} reverse: true, query: "status:active OR status:scheduled") {
           edges {
             cursor
             node {

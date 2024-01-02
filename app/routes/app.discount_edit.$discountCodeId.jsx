@@ -41,7 +41,10 @@ export const loader = async ({ request, params }) => {
   try {
     const { session } = await authenticate.admin(request);
     const discountCode = await getDiscountCodeById(params.discountCodeId);
+<<<<<<< HEAD
     console.log('DOUGLAS -1 START PROCESS')
+=======
+>>>>>>> heroku
     const rawShopifyCurrentDiscounts = await getDiscounts(request);
     const shopifyCurrentDiscounts = rawShopifyCurrentDiscounts.map(
       ({node}) => ({
@@ -165,7 +168,7 @@ export default function Index() {
       divider={false}
       fullWidth={false}
       primaryAction={{content: "Save Changes", onAction: () => {handleFormSubmit()}, disabled: !formModified  }}
-      secondaryActions={[{content: "TESTE", onAction: () => {handleTest()}}]}
+      // secondaryActions={[{content: "TESTE", onAction: () => {handleTest()}}]}
     >
       {/* //ADD A SHOPIFY POLARIS SAVE BAR EVERYTIME discountCodeS STATE IS DIFFERENT FROM ORIGINAL discountCodeS */}
       <Layout sectioned>
