@@ -7,7 +7,7 @@ import {
 } from "@shopify/shopify-app-remix/server";
 import { shopifyApi } from '@shopify/shopify-api';
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
-import { restResources } from "@shopify/shopify-api/rest/admin/2023-07";
+import { restResources } from "@shopify/shopify-api/rest/admin/2023-10";
 
 import prisma from "./db.server";
 
