@@ -19,6 +19,7 @@ module.exports = {
   serverModuleFormat: "cjs",
   future: {},
   devServerPort: process.env.HMR_SERVER_PORT || 8002,
+  serverBuildPath: "./build/index.js",
   serverDependenciesToBundle: [
     /^remix-utils.*/,
   ],
