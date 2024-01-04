@@ -164,6 +164,7 @@ export default function Index() {
       divider={false}
       fullWidth={false}
       primaryAction={{content: "Save Changes", onAction: () => {handleFormSubmit()}, disabled: !formModified  }}
+      backAction={{content: 'Stack Discounts', url: '../'}}
       // secondaryActions={[{content: "TESTE", onAction: () => {handleTest()}}]}
     >
       {/* //ADD A SHOPIFY POLARIS SAVE BAR EVERYTIME discountCodeS STATE IS DIFFERENT FROM ORIGINAL discountCodeS */}
