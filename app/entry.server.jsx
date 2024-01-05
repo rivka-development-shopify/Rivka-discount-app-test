@@ -1,7 +1,7 @@
 import { PassThrough } from "stream";
 import { renderToPipeableStream } from "react-dom/server";
 import { RemixServer } from "@remix-run/react";
-import { isbot } from "isbot";
+import isbot from "isbot";
 
 import { addDocumentResponseHeaders } from "./shopify.server";
 
@@ -16,9 +16,16 @@ export default async function handleRequest(
 ) {
   addDocumentResponseHeaders(request, responseHeaders);
 
-  const callbackName = isbot(request.headers.get("user-agent") || "")
+  let callbackName;
+  if(process.env.NODE_ENV === 'production') {
+    callbackName = isbot.isbot(request.headers.get("user-agent") || "")
     ? "onAllReady"
     : "onShellReady";
+  } else {
+    callbackName = isbot(request.headers.get("user-agent") || "")
+    ? "onAllReady"
+    : "onShellReady";
+  }
 
   return new Promise((resolve, reject) => {
     const { pipe, abort } = renderToPipeableStream(
