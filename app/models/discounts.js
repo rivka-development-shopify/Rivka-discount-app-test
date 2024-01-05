@@ -41,6 +41,7 @@ export const checkIfProductBelongsToPriceRule = (productDetails, priceRule) => {
   )
 }
 
+
 export const getDiscountCodeFromDB = async (code) => {
   // Try to find an exact match
   const exactMatch = await prisma.discountCode.findFirst({
@@ -105,6 +106,10 @@ export const getDiscountCodeByIdFromDB = async (discountCodeId) => {
     }
   })
 }
+
+export const getAllTempDiscountCodesFromDB = async () => {
+  return await prisma.tempDiscountCode.findMany();
+};
 
 export const getAllDiscountCodesFromDB = async () => {
   return await prisma.discountCode.findMany()
@@ -196,5 +201,6 @@ export default {
   getProductDiscountedPrices,
   updateDiscountCodeFromDB,
   getDiscountCodeByIdFromDB,
-  getAllDiscountCodesFromDB
+  getAllDiscountCodesFromDB,
+  getAllTempDiscountCodesFromDB
 }

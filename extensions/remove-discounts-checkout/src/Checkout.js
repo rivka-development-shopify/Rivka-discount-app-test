@@ -3,7 +3,7 @@ import { extension } from "@shopify/ui-extensions/checkout";
 export default extension("purchase.checkout.block.render", (root, api) => {
   const { discountCodes, storage } = api;
 
-  const API_URL = 'https://3af3-181-31-154-153.ngrok-free.app';
+  const API_URL = 'https://rivkacustomdiscounts.tech';
 
   fetch(
     `${API_URL}/api/temp_discounts?publicAuthKey=24b0ej97yu0cjkovcp356z8snvj0g1w8`,
