@@ -53,7 +53,7 @@ const applyAndSave = async (listDiscountsData) => {
         productDiscountedPrices,
         newTempDiscountInfo
       }));
-      
+
       updateCartDrawerUI(newTempDiscountInfo.code, newTempDiscountInfo.amount, productDiscountedPrices);
     }
   } else {
@@ -100,10 +100,10 @@ const handleApplyDiscount = async (e) => {
   })
 
   const listDiscountsData = await listDiscountsResponse.json();
-  
+
   if(listDiscountsData.body.data.newTempDiscountInfo?.amount !== 0) {
       applyAndSave(listDiscountsData);
-  } else {    
+  } else {
     errorMessage.style.display = 'block';
     e.target.classList.remove('loading');
     e.target.disabled = false;
@@ -126,7 +126,7 @@ const handleRemoveDiscount = () => {
     } else {
       item.style.display = 'block'
     }
-    
+
   });
   updateCartDrawerUI('', 0.0, [])
 }
@@ -135,32 +135,32 @@ const updateCartDrawerUI = (tempCode, discounted_price, productDiscountedPrices)
   const original_price = productDiscountedPrices.reduce((acm, discountInfo) => { return acm + discountInfo.price}, 0);
   const codeParts = tempCode.split("-");
 
-  productDiscountedPrices.forEach((discountInfo) => { 
+  productDiscountedPrices.forEach((discountInfo) => {
     if(discountInfo.discountApplied > 0) {
       const id = discountInfo.productVariantId.split('/')[4];
       const domItem = document.querySelector(`[data-key*="${id}"]`);
       const itemDetails = domItem.querySelector('.cart__item-details .cart__item-sub');
       const priceCol = itemDetails.querySelector('.cart__item-price-col');
-      if(priceCol) {priceCol.style.display = 'none'}      
+      if(priceCol) {priceCol.style.display = 'none'}
       let div = document.createElement('div');
-      div.innerHTML = `                       
-          <small class="cart__price cart__price--strikethrough"><span class="">$${discountInfo.price.toFixed(2)}</span></small>                  
-          <span class="cart__price cart__discount"><span class="">$${discountInfo.price.toFixed(2) - discountInfo.discountApplied.toFixed(2)}</span></span>                        
-          <small class="cart__discount">${codeParts[1]} (-$${discountInfo.discountApplied.toFixed(2)})</small>        
+      div.innerHTML = `
+          <small class="cart__price cart__price--strikethrough"><span class="">$${discountInfo.price.toFixed(2)}</span></small>
+          <span class="cart__price cart__discount"><span class="">$${discountInfo.price.toFixed(2) - discountInfo.discountApplied.toFixed(2)}</span></span>
+          <small class="cart__discount">${codeParts[1]} (-$${discountInfo.discountApplied.toFixed(2)})</small>
       `;
-      div.classList.add('cart__item-price-col');     
-      div.classList.add('text-right');     
-     
+      div.classList.add('cart__item-price-col');
+      div.classList.add('text-right');
+
       itemDetails.appendChild(div);
       console.log(discountInfo)
-    }  
+    }
   });
   // CREATE ELEMENTS WITH VANILLA JS BASED ON TEMP_CODE
   const discountAppliedDiv = document.querySelector('.discount_applied');
   const discountTitleDiv = document.querySelector('.discount-title');
-  const dcWrapperDiv = document.querySelector('.dc_wrapper');  
-  const discountCodesDiv = document.querySelector('.discount__codes');  
-  
+  const dcWrapperDiv = document.querySelector('.dc_wrapper');
+  const discountCodesDiv = document.querySelector('.discount__codes');
+
   const input = document.querySelector('#rivka-app-discount-code-input')
   const subTotal = document.querySelector('.cart__item--subtotal');
   const drawerSubTotal = document.querySelector('.cart-drawer__item--subtotal');
@@ -287,14 +287,23 @@ const updateUIFromLocalStorage = async () => {
   const discountInfo = await listDiscountsData?.newTempDiscountInfo;
   const productDiscountedPrices = await listDiscountsData?.productDiscountedPrices;
 
-  if (discountInfo && productDiscountedPrices) {    
+  if (discountInfo && productDiscountedPrices) {
     updateCartDrawerUI(discountInfo.code, discountInfo.amount, productDiscountedPrices);
     switchCartSubtotal()
   }
 };
 
+const checkForExtensionStorage = () => {
+  const extensionStorage = JSON.parse(localStorage.getItem('extensionStorage'));
+  return Object.keys(extensionStorage).find(key => ((key.includes('remove-rivka-discount'))))
+}
+
 // Update the UI when the page loads
 window.addEventListener("load", (event) => {
+  if(checkForExtensionStorage()) {
+    localStorage.removeItem('rivka-discount-applied')
+    localStorage.removeItem('extensionStorage')
+  }
   const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
   const discountInfo = listDiscountsData?.newTempDiscountInfo;
   if(!getDiscountCookie() && discountInfo) {

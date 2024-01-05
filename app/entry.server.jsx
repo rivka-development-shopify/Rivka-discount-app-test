@@ -16,9 +16,11 @@ export default async function handleRequest(
 ) {
   addDocumentResponseHeaders(request, responseHeaders);
 
+
   const callbackName = isbot(request.headers.get("user-agent") || "")
     ? "onAllReady"
     : "onShellReady";
+
 
   return new Promise((resolve, reject) => {
     const { pipe, abort } = renderToPipeableStream(
