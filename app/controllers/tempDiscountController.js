@@ -13,14 +13,57 @@ import {
 
 import {
   calculatePricesForProducts,
+  getTempDiscountCodeFromDB,
   getDiscountCodeFromDB,
-  getTempDiscountCodeFromDB
+  getAllTempDiscountCodesFromDB
 } from '../models/discounts'
 
 import { validateAuthKeyParam } from '../utils/publicAuthKey'
 
 const validateBodyForDiscountInput = (body) => {
   return (!body.addedCode || !body.cartProducts)
+}
+
+export const getAllTempDiscounts = async (body) => {
+  try {
+    const tempDiscounts = await getAllTempDiscountCodesFromDB()
+    return json(
+      {
+        body: {
+          data: {
+            tempDiscounts: tempDiscounts.map(tempDiscount => tempDiscount.code),
+          }
+        }
+      },
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+  catch(e) {
+    console.error({
+      err: "API Error getting temp discounts",
+      msg: e
+    })
+    return json(
+      {
+        body: {
+          data: {
+            err: 'Internal Server Error'
+          }
+        }
+      },
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
 }
 
 export const createTempDiscount = async (body) => {
@@ -327,7 +370,7 @@ export async function deleteExpiredDiscounts(request) {
         type: 'IncorrectAuthKey'
       }
     }
-    const allDiscounts = await prisma.tempDiscountCode.findMany({})
+    const allDiscounts = await getAllTempDiscountCodesFromDB();
 
     const expiredDiscounts = allDiscounts.filter(
       discount => {
@@ -409,5 +452,6 @@ export async function deleteExpiredDiscounts(request) {
 export default {
   createTempDiscount,
   updateTempDiscount,
-  deleteExpiredDiscounts
+  deleteExpiredDiscounts,
+  getAllTempDiscounts
 }
