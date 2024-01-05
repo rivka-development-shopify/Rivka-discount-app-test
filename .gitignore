@@ -43,3 +43,6 @@ extensions/sku-discount/dist
 extensions/sku-discount/generated
 extensions/sku-discount/target
 extensions/sku-discount/Cargo.lock
+
+extensions/remove-discounts-checkout/dist
+extensions/custom-shipping-message/dist
