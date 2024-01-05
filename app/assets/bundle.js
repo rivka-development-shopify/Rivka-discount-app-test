@@ -23,6 +23,7 @@ const parseCartData = (rawCartData) => {
 
 const removeDiscountCookie = async () => {
   document.cookie = `discount_code=";path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT";`
+  document.cookie = `discount_value=";path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT";`
 }
 
 const getDiscountCookie = () => {
@@ -303,6 +304,7 @@ window.addEventListener("load", (event) => {
   if(checkForExtensionStorage()) {
     localStorage.removeItem('rivka-discount-applied')
     localStorage.removeItem('extensionStorage')
+    removeDiscountCookie()
   }
   const listDiscountsData = JSON.parse(localStorage.getItem('rivka-discount-applied'));
   const discountInfo = listDiscountsData?.newTempDiscountInfo;
